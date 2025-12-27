@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - ReactScope</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="./" class="text-white">Docs</a>
+        <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
+        <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-4 gap-8">
+    <!-- Sidebar -->
+    <aside class="md:col-span-1">
+      <nav class="sticky top-24 space-y-6">
+        <div>
+          <h3 class="font-semibold text-sm text-zinc-400 uppercase tracking-wider mb-3">Getting Started</h3>
+          <ul class="space-y-2">
+            <li><a href="getting-started.html" class="text-zinc-300 hover:text-white">Installation</a></li>
+            <li><a href="getting-started.html#setup" class="text-zinc-300 hover:text-white">Basic Setup</a></li>
+            <li><a href="getting-started.html#dashboard" class="text-zinc-300 hover:text-white">Dashboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-sm text-zinc-400 uppercase tracking-wider mb-3">API Reference</h3>
+          <ul class="space-y-2">
+            <li><a href="api/provider.html" class="text-zinc-300 hover:text-white">Provider</a></li>
+            <li><a href="api/hooks.html" class="text-zinc-300 hover:text-white">Hooks</a></li>
+            <li><a href="api/components.html" class="text-zinc-300 hover:text-white">Components</a></li>
+            <li><a href="api/plugins.html" class="text-zinc-300 hover:text-white">Plugins</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-sm text-zinc-400 uppercase tracking-wider mb-3">Examples</h3>
+          <ul class="space-y-2">
+            <li><a href="examples/basic.html" class="text-zinc-300 hover:text-white">Basic Usage</a></li>
+            <li><a href="examples/custom-plugin.html" class="text-zinc-300 hover:text-white">Custom Plugin</a></li>
+            <li><a href="examples/production.html" class="text-zinc-300 hover:text-white">Production</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <main class="md:col-span-3">
+      <h1 class="text-4xl font-bold mb-8">Documentation</h1>
+
+      <p class="text-xl text-zinc-400 mb-12">
+        Welcome to ReactScope documentation. Learn how to profile and optimize your React applications.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <a href="getting-started.html" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
+          <h2 class="text-xl font-semibold mb-2">Getting Started</h2>
+          <p class="text-zinc-400">Install ReactScope and set up your first profiling session in minutes.</p>
+        </a>
+        <a href="api/" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
+          <h2 class="text-xl font-semibold mb-2">API Reference</h2>
+          <p class="text-zinc-400">Complete reference for all components, hooks, and utilities.</p>
+        </a>
+        <a href="api/plugins.html" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
+          <h2 class="text-xl font-semibold mb-2">Plugins</h2>
+          <p class="text-zinc-400">Learn about built-in plugins and how to create your own.</p>
+        </a>
+        <a href="examples/" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
+          <h2 class="text-xl font-semibold mb-2">Examples</h2>
+          <p class="text-zinc-400">Real-world examples and best practices.</p>
+        </a>
+      </div>
+
+      <section class="mt-16">
+        <h2 class="text-2xl font-bold mb-6">Key Concepts</h2>
+
+        <div class="space-y-8">
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Micro-Kernel Architecture</h3>
+            <p class="text-zinc-400">ReactScope uses a micro-kernel architecture where the core kernel provides minimal functionality, and all features are implemented as plugins. This allows for maximum flexibility and tree-shaking.</p>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Event-Driven Design</h3>
+            <p class="text-zinc-400">All component events (renders, mounts, unmounts, props changes) are emitted through a central event bus. Plugins subscribe to these events to perform their specific functions.</p>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Centralized Metrics Store</h3>
+            <p class="text-zinc-400">All metrics are stored in a central store, making it easy to query, export, and visualize performance data across your entire application.</p>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Shadow DOM Dashboard</h3>
+            <p class="text-zinc-400">The visual dashboard renders inside a Shadow DOM to ensure complete CSS isolation from your application. This prevents any style conflicts.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

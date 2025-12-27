@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plugins - ReactScope API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="./" class="text-white">API</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-8">Plugins Reference</h1>
+    <p class="text-zinc-400 mb-12">ReactScope includes 10 built-in plugins. All plugins follow the micro-kernel architecture and can be enabled/disabled independently.</p>
+
+    <div class="space-y-16">
+      <!-- render-tracker -->
+      <section id="render-tracker">
+        <h2 class="text-2xl font-semibold mb-4">render-tracker</h2>
+        <p class="text-zinc-400 mb-4">Tracks render count, duration, and maintains render history for each component.</p>
+        <pre><code class="language-typescript">import { createRenderTrackerPlugin } from '@oxog/reactscope'
+
+const plugin = createRenderTrackerPlugin({
+  maxHistorySize: 100,    // Max renders to keep in history
+  trackPhase: true,       // Track mount vs update phase
+  slowThreshold: 16,      // ms to consider a render slow
+})
+
+// Plugin API
+interface RenderTrackerAPI {
+  getRenderHistory(componentId: string): RenderRecord[]
+  getSlowRenders(threshold?: number): RenderRecord[]
+  clearHistory(): void
+}</code></pre>
+      </section>
+
+      <!-- props-differ -->
+      <section id="props-differ">
+        <h2 class="text-2xl font-semibold mb-4">props-differ</h2>
+        <p class="text-zinc-400 mb-4">Performs deep comparison of props between renders to identify what changed.</p>
+        <pre><code class="language-typescript">import { createPropsDifferPlugin } from '@oxog/reactscope'
+
+const plugin = createPropsDifferPlugin({
+  maxDepth: 5,            // Max depth for deep comparison
+  trackArrays: true,      // Track array item changes
+  ignoreKeys: ['key'],    // Keys to ignore in comparison
+})
+
+// Plugin API
+interface PropsDifferAPI {
+  getChanges(componentId: string): PropChange[]
+  getMostChangedProps(componentId: string, limit?: number): PropStat[]
+}</code></pre>
+      </section>
+
+      <!-- wasted-render-detector -->
+      <section id="wasted-render-detector">
+        <h2 class="text-2xl font-semibold mb-4">wasted-render-detector</h2>
+        <p class="text-zinc-400 mb-4">Detects unnecessary re-renders where props and state haven't changed.</p>
+        <pre><code class="language-typescript">import { createWastedRenderDetectorPlugin } from '@oxog/reactscope'
+
+const plugin = createWastedRenderDetectorPlugin({
+  strictMode: false,      // Use strict equality for comparison
+  trackReasons: true,     // Track why render was considered wasted
+})
+
+// Plugin API
+interface WastedRenderDetectorAPI {
+  getWastedRenders(componentId: string): WastedRender[]
+  getWastedRenderCount(componentId: string): number
+  getSuggestions(componentId: string): OptimizationSuggestion[]
+}</code></pre>
+      </section>
+
+      <!-- lifecycle-tracker -->
+      <section id="lifecycle-tracker">
+        <h2 class="text-2xl font-semibold mb-4">lifecycle-tracker</h2>
+        <p class="text-zinc-400 mb-4">Tracks component mount/unmount events and calculates component lifetime.</p>
+        <pre><code class="language-typescript">import { createLifecycleTrackerPlugin } from '@oxog/reactscope'
+
+const plugin = createLifecycleTrackerPlugin({
+  trackMountTime: true,   // Track mount timestamp
+  trackUnmountTime: true, // Track unmount timestamp
+})
+
+// Plugin API
+interface LifecycleTrackerAPI {
+  getMountedComponents(): string[]
+  getComponentLifetime(componentId: string): number // ms
+  getUnmountedComponents(): ComponentLifecycle[]
+}</code></pre>
+      </section>
+
+      <!-- console-reporter -->
+      <section id="console-reporter">
+        <h2 class="text-2xl font-semibold mb-4">console-reporter</h2>
+        <p class="text-zinc-400 mb-4">Configurable console logging for profiling data.</p>
+        <pre><code class="language-typescript">import { createConsoleReporterPlugin } from '@oxog/reactscope'
+
+const plugin = createConsoleReporterPlugin({
+  logRenders: true,       // Log render events
+  logMounts: true,        // Log mount events
+  logUnmounts: true,      // Log unmount events
+  logWasted: true,        // Log wasted renders
+  logSlow: true,          // Log slow renders
+  slowThreshold: 16,      // Threshold for slow render
+  groupByComponent: true, // Group logs by component
+})
+
+// Plugin API
+interface ConsoleReporterAPI {
+  enable(): void
+  disable(): void
+  setOptions(options: Partial&lt;ConsoleReporterOptions&gt;): void
+}</code></pre>
+      </section>
+
+      <!-- json-exporter -->
+      <section id="json-exporter">
+        <h2 class="text-2xl font-semibold mb-4">json-exporter</h2>
+        <p class="text-zinc-400 mb-4">Exports metrics as JSON for CI/CD integration and external analysis.</p>
+        <pre><code class="language-typescript">import { createJsonExporterPlugin } from '@oxog/reactscope'
+
+const plugin = createJsonExporterPlugin({
+  includeTimeline: true,  // Include timeline events
+  includeTree: true,      // Include component tree
+  pretty: false,          // Pretty print JSON
+})
+
+// Plugin API
+interface JsonExporterAPI {
+  export(): string
+  exportToFile(filename: string): void
+  getSnapshot(): MetricsSnapshot
+}</code></pre>
+      </section>
+
+      <!-- timeline-recorder -->
+      <section id="timeline-recorder">
+        <h2 class="text-2xl font-semibold mb-4">timeline-recorder</h2>
+        <p class="text-zinc-400 mb-4">Records events for playback and analysis with timeline visualization.</p>
+        <pre><code class="language-typescript">import { createTimelineRecorderPlugin } from '@oxog/reactscope'
+
+const plugin = createTimelineRecorderPlugin({
+  maxEvents: 1000,        // Max events to keep
+  recordAll: true,        // Record all event types
+  eventTypes: ['render', 'mount', 'unmount'], // Specific types
+})
+
+// Plugin API
+interface TimelineRecorderAPI {
+  getEvents(filter?: EventFilter): TimelineEvent[]
+  getEventsByTimeRange(start: number, end: number): TimelineEvent[]
+  clear(): void
+  export(): TimelineEvent[]
+}</code></pre>
+      </section>
+
+      <!-- memory-tracker -->
+      <section id="memory-tracker">
+        <h2 class="text-2xl font-semibold mb-4">memory-tracker</h2>
+        <p class="text-zinc-400 mb-4">Monitors memory usage and detects potential memory leaks (Chrome only).</p>
+        <pre><code class="language-typescript">import { createMemoryTrackerPlugin } from '@oxog/reactscope'
+
+const plugin = createMemoryTrackerPlugin({
+  sampleInterval: 1000,   // ms between samples
+  maxSamples: 100,        // Max samples to keep
+  leakThreshold: 10,      // MB increase to consider leak
+})
+
+// Plugin API
+interface MemoryTrackerAPI {
+  getCurrentUsage(): MemoryUsage | null
+  getUsageHistory(): MemoryUsage[]
+  getLeakWarnings(): LeakWarning[]
+  forceGC(): void // If available
+}</code></pre>
+      </section>
+
+      <!-- network-correlator -->
+      <section id="network-correlator">
+        <h2 class="text-2xl font-semibold mb-4">network-correlator</h2>
+        <p class="text-zinc-400 mb-4">Correlates network requests with component renders to understand data flow.</p>
+        <pre><code class="language-typescript">import { createNetworkCorrelatorPlugin } from '@oxog/reactscope'
+
+const plugin = createNetworkCorrelatorPlugin({
+  trackFetch: true,       // Track fetch requests
+  trackXHR: true,         // Track XMLHttpRequest
+  urlFilter: /api/,       // Filter URLs to track
+})
+
+// Plugin API
+interface NetworkCorrelatorAPI {
+  getRequests(): NetworkRequest[]
+  getRequestsByComponent(componentId: string): NetworkRequest[]
+  getCorrelations(): RenderNetworkCorrelation[]
+}</code></pre>
+      </section>
+
+      <!-- dashboard-ui -->
+      <section id="dashboard-ui">
+        <h2 class="text-2xl font-semibold mb-4">dashboard-ui</h2>
+        <p class="text-zinc-400 mb-4">Visual overlay panel with Shadow DOM isolation for real-time monitoring.</p>
+        <pre><code class="language-typescript">import { createDashboardUIPlugin } from '@oxog/reactscope'
+
+const plugin = createDashboardUIPlugin({
+  position: 'bottom-right', // Panel position
+  defaultOpen: false,       // Open on init
+  shortcut: 'ctrl+shift+r', // Keyboard shortcut
+  theme: 'dark',            // 'dark' | 'light'
+})
+
+// Plugin API
+interface DashboardUIAPI {
+  show(): void
+  hide(): void
+  toggle(): void
+  isVisible(): boolean
+  setPosition(position: Position): void
+}</code></pre>
+      </section>
+
+      <!-- Creating Custom Plugins -->
+      <section id="custom-plugins">
+        <h2 class="text-2xl font-semibold mb-8">Creating Custom Plugins</h2>
+        <p class="text-zinc-400 mb-4">You can create custom plugins using the <code class="bg-zinc-800 px-2 py-1 rounded">createPlugin</code> helper:</p>
+        <pre><code class="language-typescript">import { createPlugin, KernelEvent } from '@oxog/reactscope'
+
+const myPlugin = createPlugin({
+  name: 'my-custom-plugin',
+  version: '1.0.0',
+
+  // Lifecycle hooks
+  onInit: (kernel) => {
+    console.log('Plugin initialized')
+  },
+
+  onDestroy: () => {
+    console.log('Plugin destroyed')
+  },
+
+  // Event hooks
+  hooks: {
+    onRender: (event) => {
+      console.log(`${event.componentName} rendered`)
+    },
+    onMount: (event) => {
+      console.log(`${event.componentName} mounted`)
+    },
+    onUnmount: (event) => {
+      console.log(`${event.componentName} unmounted`)
+    },
+    onPropsChange: (event) => {
+      console.log(`${event.componentName} props changed`)
+    },
+  },
+
+  // Public API
+  api: {
+    customMethod: () => {
+      return 'custom data'
+    },
+    anotherMethod: (param: string) => {
+      // Do something
+    },
+  },
+})</code></pre>
+
+        <h3 class="text-lg font-medium mt-8 mb-4">Plugin Interface</h3>
+        <pre><code class="language-typescript">interface Plugin {
+  readonly name: string
+  readonly version: string
+  readonly api?: Record&lt;string, unknown&gt;
+
+  onInit?(kernel: Kernel): void
+  onDestroy?(): void
+
+  hooks?: {
+    onRender?(event: RenderEvent): void
+    onMount?(event: MountEvent): void
+    onUnmount?(event: UnmountEvent): void
+    onPropsChange?(event: PropsChangeEvent): void
+    onStateChange?(event: StateChangeEvent): void
+    onError?(event: ErrorEvent): void
+  }
+}</code></pre>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

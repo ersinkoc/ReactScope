@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference - ReactScope</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="./" class="text-white">API</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-8">API Reference</h1>
+
+    <div class="space-y-12">
+      <!-- Provider -->
+      <section id="provider">
+        <h2 class="text-2xl font-semibold mb-4">ReactScopeProvider</h2>
+        <p class="text-zinc-400 mb-4">The root provider component that initializes the kernel and provides context to the component tree.</p>
+        <pre><code class="language-typescript">interface ReactScopeProviderProps {
+  children: React.ReactNode
+  enabled?: boolean              // Default: true
+  plugins?: Plugin[]             // Additional plugins
+  onReady?: (kernel: Kernel) => void
+  options?: {
+    trackAllComponents?: boolean // Default: false
+    sampleRate?: number          // Default: 1 (0-1)
+    maxHistorySize?: number      // Default: 1000
+  }
+}</code></pre>
+      </section>
+
+      <!-- Hooks -->
+      <section id="hooks">
+        <h2 class="text-2xl font-semibold mb-4">Hooks</h2>
+
+        <div class="space-y-6">
+          <div>
+            <h3 class="text-lg font-medium mb-2">useScope</h3>
+            <p class="text-zinc-400 mb-2">Main profiling hook for tracking component renders.</p>
+            <pre><code class="language-typescript">function useScope(name: string, options?: UseScopeOptions): ScopeHandle
+
+interface ScopeHandle {
+  readonly componentId: string
+  readonly renderCount: number
+  readonly lastRenderTime: number      // ms
+  readonly averageRenderTime: number   // ms
+  readonly wastedRenders: number
+  readonly isTracking: boolean
+  trackRender(duration: number, phase: 'mount' | 'update'): void
+  trackPropsChange(changes: PropsDiff[]): void
+}</code></pre>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-medium mb-2">useScopeMetrics</h3>
+            <p class="text-zinc-400 mb-2">Read-only hook for accessing component metrics.</p>
+            <pre><code class="language-typescript">function useScopeMetrics(componentId: string): ComponentMetrics | undefined</code></pre>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-medium mb-2">useScopeContext</h3>
+            <p class="text-zinc-400 mb-2">Access the kernel instance directly.</p>
+            <pre><code class="language-typescript">function useScopeContext(): Kernel</code></pre>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-medium mb-2">useAllScopeMetrics</h3>
+            <p class="text-zinc-400 mb-2">Get metrics for all tracked components.</p>
+            <pre><code class="language-typescript">function useAllScopeMetrics(): Map&lt;string, ComponentMetrics&gt;</code></pre>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-medium mb-2">useScopeSummary</h3>
+            <p class="text-zinc-400 mb-2">Get summary statistics across all components.</p>
+            <pre><code class="language-typescript">function useScopeSummary(): {
+  totalComponents: number
+  totalRenders: number
+  totalWastedRenders: number
+  averageRenderTime: number
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Components -->
+      <section id="components">
+        <h2 class="text-2xl font-semibold mb-4">Components</h2>
+
+        <div class="space-y-6">
+          <div>
+            <h3 class="text-lg font-medium mb-2">Scope</h3>
+            <p class="text-zinc-400 mb-2">Wrapper component that profiles its children using React Profiler API.</p>
+            <pre><code class="language-typescript">interface ScopeProps {
+  children: React.ReactNode
+  name?: string
+  onRender?: (metrics: ComponentMetrics) => void
+  trackProps?: boolean
+  trackState?: boolean
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- HOC -->
+      <section id="hoc">
+        <h2 class="text-2xl font-semibold mb-4">Higher-Order Components</h2>
+
+        <div>
+          <h3 class="text-lg font-medium mb-2">withScope</h3>
+          <p class="text-zinc-400 mb-2">HOC that adds profiling to any component.</p>
+          <pre><code class="language-typescript">function withScope&lt;P extends object&gt;(
+  Component: React.ComponentType&lt;P&gt;,
+  options?: WithScopeOptions
+): React.ComponentType&lt;P&gt;
+
+interface WithScopeOptions {
+  name?: string
+  trackProps?: boolean
+  trackState?: boolean
+  onRender?: (metrics: ComponentMetrics) => void
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- Kernel -->
+      <section id="kernel">
+        <h2 class="text-2xl font-semibold mb-4">Kernel</h2>
+        <pre><code class="language-typescript">interface Kernel {
+  // Plugin management
+  register(plugin: Plugin): void
+  unregister(pluginName: string): void
+  getPlugin&lt;T extends Plugin&gt;(name: string): T | undefined
+  getPlugins(): Plugin[]
+
+  // Event system
+  emit(event: KernelEvent): void
+  on&lt;T extends KernelEvent['type']&gt;(
+    eventType: T,
+    handler: (event: Extract&lt;KernelEvent, { type: T }&gt;) => void
+  ): () => void
+
+  // Metrics
+  getMetrics(): MetricsStore
+  updateMetrics(componentId: string, partial: Partial&lt;ComponentMetrics&gt;): void
+  getComponentMetrics(componentId: string): ComponentMetrics | undefined
+  clearMetrics(): void
+
+  // Configuration
+  configure(options: KernelOptions): void
+  getOptions(): KernelOptions
+  isEnabled(): boolean
+  enable(): void
+  disable(): void
+
+  // Lifecycle
+  destroy(): void
+}</code></pre>
+      </section>
+
+      <!-- Utility Functions -->
+      <section id="utilities">
+        <h2 class="text-2xl font-semibold mb-4">Utility Functions</h2>
+        <pre><code class="language-typescript">// Global kernel access
+function getKernel(): Kernel
+function getMetrics(): MetricsStore | null
+function exportMetrics(): string
+function clearMetrics(): void
+
+// Plugin creation
+function createPlugin(config: PluginConfig): Plugin
+
+// Comparison utilities
+function deepEqual(a: unknown, b: unknown): boolean
+function shallowEqual(a: unknown, b: unknown): boolean
+
+// ID generation
+function uid(): string
+function createIdGenerator(prefix?: string): () => string
+
+// Function utilities
+function throttle&lt;T&gt;(fn: T, wait: number, options?: ThrottleOptions): T
+function debounce&lt;T&gt;(fn: T, wait: number, options?: DebounceOptions): T
+
+// Formatting
+function formatDuration(ms: number): string
+function formatBytes(bytes: number, decimals?: number): string
+function formatNumber(num: number, decimals?: number): string
+function formatPercentage(value: number, decimals?: number): string
+function formatTimestamp(timestamp: number, includeDate?: boolean): string</code></pre>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

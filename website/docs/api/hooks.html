@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hooks - ReactScope API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="./" class="text-white">API</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-8">Hooks Reference</h1>
+    <p class="text-zinc-400 mb-12">ReactScope provides several hooks for integrating performance profiling into your React components.</p>
+
+    <div class="space-y-16">
+      <!-- useScope -->
+      <section id="useScope">
+        <h2 class="text-2xl font-semibold mb-4">useScope</h2>
+        <p class="text-zinc-400 mb-4">The main profiling hook for tracking component renders. Returns a handle with real-time metrics and methods.</p>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
+        <pre><code class="language-typescript">function useScope(name: string, options?: UseScopeOptions): ScopeHandle</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Parameters</h3>
+        <div class="bg-zinc-800/50 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-zinc-800">
+              <tr>
+                <th class="text-left px-4 py-2">Name</th>
+                <th class="text-left px-4 py-2">Type</th>
+                <th class="text-left px-4 py-2">Description</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-700">
+              <tr>
+                <td class="px-4 py-2 font-mono text-blue-400">name</td>
+                <td class="px-4 py-2 font-mono">string</td>
+                <td class="px-4 py-2 text-zinc-400">Component name for identification</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-2 font-mono text-blue-400">options</td>
+                <td class="px-4 py-2 font-mono">UseScopeOptions</td>
+                <td class="px-4 py-2 text-zinc-400">Optional configuration</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Options</h3>
+        <pre><code class="language-typescript">interface UseScopeOptions {
+  trackProps?: boolean     // Track prop changes (default: true)
+  trackState?: boolean     // Track state changes (default: false)
+  sampleRate?: number      // Sampling rate 0-1 (default: 1)
+  onRender?: (metrics: ComponentMetrics) => void
+}</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Return Value</h3>
+        <pre><code class="language-typescript">interface ScopeHandle {
+  readonly componentId: string
+  readonly renderCount: number
+  readonly lastRenderTime: number      // ms
+  readonly averageRenderTime: number   // ms
+  readonly wastedRenders: number
+  readonly isTracking: boolean
+
+  trackRender(duration: number, phase: 'mount' | 'update'): void
+  trackPropsChange(changes: PropsDiff[]): void
+}</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
+        <pre><code class="language-tsx">import { useScope } from '@oxog/reactscope'
+
+function UserProfile({ user }) {
+  const scope = useScope('UserProfile', {
+    trackProps: true,
+    onRender: (metrics) => {
+      if (metrics.lastRenderTime > 16) {
+        console.warn('Slow render detected!')
+      }
+    }
+  })
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{user.name}&lt;/h1&gt;
+      &lt;p&gt;Renders: {scope.renderCount}&lt;/p&gt;
+      &lt;p&gt;Avg Time: {scope.averageRenderTime.toFixed(2)}ms&lt;/p&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- useScopeMetrics -->
+      <section id="useScopeMetrics">
+        <h2 class="text-2xl font-semibold mb-4">useScopeMetrics</h2>
+        <p class="text-zinc-400 mb-4">Read-only hook for accessing metrics of a specific component by ID. Useful for building monitoring dashboards.</p>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
+        <pre><code class="language-typescript">function useScopeMetrics(componentId: string): ComponentMetrics | undefined</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Return Value</h3>
+        <pre><code class="language-typescript">interface ComponentMetrics {
+  componentId: string
+  componentName: string
+  renderCount: number
+  totalRenderTime: number
+  lastRenderTime: number
+  averageRenderTime: number
+  wastedRenderCount: number
+  mountTime: number
+  unmountTime: number | null
+  parentId: string | null
+  children: string[]
+  props: Record&lt;string, unknown&gt;
+  propsHistory: PropsSnapshot[]
+}</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
+        <pre><code class="language-tsx">import { useScopeMetrics } from '@oxog/reactscope'
+
+function ComponentMonitor({ targetId }) {
+  const metrics = useScopeMetrics(targetId)
+
+  if (!metrics) {
+    return &lt;div&gt;Component not found&lt;/div&gt;
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;{metrics.componentName}&lt;/h3&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Renders: {metrics.renderCount}&lt;/li&gt;
+        &lt;li&gt;Wasted: {metrics.wastedRenderCount}&lt;/li&gt;
+        &lt;li&gt;Avg Time: {metrics.averageRenderTime.toFixed(2)}ms&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- useScopeContext -->
+      <section id="useScopeContext">
+        <h2 class="text-2xl font-semibold mb-4">useScopeContext</h2>
+        <p class="text-zinc-400 mb-4">Access the kernel instance directly for advanced use cases like registering plugins or accessing metrics store.</p>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
+        <pre><code class="language-typescript">function useScopeContext(): Kernel</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
+        <pre><code class="language-tsx">import { useScopeContext } from '@oxog/reactscope'
+
+function AdvancedMetrics() {
+  const kernel = useScopeContext()
+
+  const handleExport = () => {
+    const exporter = kernel.getPlugin('json-exporter')
+    if (exporter?.api?.export) {
+      const json = exporter.api.export()
+      console.log(json)
+    }
+  }
+
+  const handleClear = () => {
+    kernel.clearMetrics()
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={handleExport}&gt;Export Metrics&lt;/button&gt;
+      &lt;button onClick={handleClear}&gt;Clear Metrics&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- useAllScopeMetrics -->
+      <section id="useAllScopeMetrics">
+        <h2 class="text-2xl font-semibold mb-4">useAllScopeMetrics</h2>
+        <p class="text-zinc-400 mb-4">Get metrics for all tracked components. Returns a Map for efficient lookups.</p>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
+        <pre><code class="language-typescript">function useAllScopeMetrics(): Map&lt;string, ComponentMetrics&gt;</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
+        <pre><code class="language-tsx">import { useAllScopeMetrics } from '@oxog/reactscope'
+
+function MetricsDashboard() {
+  const allMetrics = useAllScopeMetrics()
+
+  const slowComponents = Array.from(allMetrics.values())
+    .filter(m => m.averageRenderTime > 16)
+    .sort((a, b) => b.averageRenderTime - a.averageRenderTime)
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Slow Components ({slowComponents.length})&lt;/h2&gt;
+      &lt;ul&gt;
+        {slowComponents.map(m => (
+          &lt;li key={m.componentId}&gt;
+            {m.componentName}: {m.averageRenderTime.toFixed(2)}ms
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- useScopeSummary -->
+      <section id="useScopeSummary">
+        <h2 class="text-2xl font-semibold mb-4">useScopeSummary</h2>
+        <p class="text-zinc-400 mb-4">Get summary statistics across all tracked components. Perfect for overview dashboards.</p>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
+        <pre><code class="language-typescript">function useScopeSummary(): ScopeSummary
+
+interface ScopeSummary {
+  totalComponents: number
+  totalRenders: number
+  totalWastedRenders: number
+  averageRenderTime: number
+}</code></pre>
+
+        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
+        <pre><code class="language-tsx">import { useScopeSummary } from '@oxog/reactscope'
+
+function AppOverview() {
+  const summary = useScopeSummary()
+
+  const wastedPercentage = summary.totalRenders > 0
+    ? (summary.totalWastedRenders / summary.totalRenders * 100).toFixed(1)
+    : 0
+
+  return (
+    &lt;div className="grid grid-cols-4 gap-4"&gt;
+      &lt;div&gt;
+        &lt;h4&gt;Components&lt;/h4&gt;
+        &lt;p&gt;{summary.totalComponents}&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;h4&gt;Total Renders&lt;/h4&gt;
+        &lt;p&gt;{summary.totalRenders}&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;h4&gt;Wasted Renders&lt;/h4&gt;
+        &lt;p&gt;{summary.totalWastedRenders} ({wastedPercentage}%)&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;h4&gt;Avg Render Time&lt;/h4&gt;
+        &lt;p&gt;{summary.averageRenderTime.toFixed(2)}ms&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

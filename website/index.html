@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReactScope - Zero-Dependency React Performance Profiler</title>
+  <meta name="description" content="Zero-dependency React performance profiler with micro-kernel plugin architecture. Track renders, detect wasted updates, and optimize your React apps.">
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="ReactScope">
+  <meta property="og:description" content="Zero-dependency React performance profiler with micro-kernel plugin architecture">
+  <meta property="og:image" content="assets/images/og-image.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #141414;
+      --bg-tertiary: #1f1f1f;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --accent: #3b82f6;
+      --success: #22c55e;
+      --warning: #eab308;
+      --error: #ef4444;
+    }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .code-header {
+      background: var(--bg-tertiary);
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    pre[class*="language-"] {
+      margin: 0;
+      background: var(--bg-secondary);
+    }
+  </style>
+</head>
+<body class="min-h-screen" x-data="{ installTab: 'npm' }">
+  <!-- Header -->
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="docs/" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="docs/api/" class="text-zinc-400 hover:text-white transition">API</a>
+        <a href="docs/examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition flex items-center gap-1">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="py-24 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-zinc-800/50 rounded-full px-4 py-2 mb-8 text-sm">
+        <span class="text-green-400">&#9679;</span>
+        <span>v1.0.0 Released</span>
+      </div>
+      <h1 class="text-5xl md:text-7xl font-bold mb-6">
+        <span class="gradient-text">Zero-Dependency</span><br>
+        React Performance Profiler
+      </h1>
+      <p class="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">
+        Track renders, detect wasted updates, monitor memory, and optimize your React applications with a powerful micro-kernel plugin architecture.
+      </p>
+
+      <!-- Install Tabs -->
+      <div class="code-block max-w-md mx-auto mb-12">
+        <div class="code-header">
+          <div class="flex gap-2">
+            <button
+              @click="installTab = 'npm'"
+              :class="installTab === 'npm' ? 'text-white' : 'text-zinc-500'"
+              class="text-sm font-medium"
+            >npm</button>
+            <button
+              @click="installTab = 'yarn'"
+              :class="installTab === 'yarn' ? 'text-white' : 'text-zinc-500'"
+              class="text-sm font-medium"
+            >yarn</button>
+            <button
+              @click="installTab = 'pnpm'"
+              :class="installTab === 'pnpm' ? 'text-white' : 'text-zinc-500'"
+              class="text-sm font-medium"
+            >pnpm</button>
+          </div>
+          <button onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent.trim())" class="text-zinc-500 hover:text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          </button>
+        </div>
+        <pre class="p-4"><code class="language-bash" x-text="installTab === 'npm' ? 'npm install @oxog/reactscope' : installTab === 'yarn' ? 'yarn add @oxog/reactscope' : 'pnpm add @oxog/reactscope'"></code></pre>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="docs/getting-started.html" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition">
+          Get Started
+        </a>
+        <a href="docs/api/" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-lg font-medium transition">
+          View API
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="py-24 px-4 bg-zinc-900/50">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-16">Everything You Need</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+          <div class="text-3xl mb-4">&#128202;</div>
+          <h3 class="text-xl font-semibold mb-2">Render Tracking</h3>
+          <p class="text-zinc-400">Track every render with precise timing, phase detection, and full history for each component.</p>
+        </div>
+        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+          <div class="text-3xl mb-4">&#9888;&#65039;</div>
+          <h3 class="text-xl font-semibold mb-2">Wasted Render Detection</h3>
+          <p class="text-zinc-400">Automatically detect renders where props and state haven't changed. Get optimization suggestions.</p>
+        </div>
+        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+          <div class="text-3xl mb-4">&#128200;</div>
+          <h3 class="text-xl font-semibold mb-2">Props Diffing</h3>
+          <p class="text-zinc-400">Deep comparison of props between renders. Identify which props change most frequently.</p>
+        </div>
+        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+          <div class="text-3xl mb-4">&#128187;</div>
+          <h3 class="text-xl font-semibold mb-2">Memory Monitoring</h3>
+          <p class="text-zinc-400">Track heap usage, detect memory trends, and identify potential memory leaks.</p>
+        </div>
+        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+          <div class="text-3xl mb-4">&#127760;</div>
+          <h3 class="text-xl font-semibold mb-2">Network Correlation</h3>
+          <p class="text-zinc-400">Correlate network requests with component renders to understand data flow.</p>
+        </div>
+        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+          <div class="text-3xl mb-4">&#128268;</div>
+          <h3 class="text-xl font-semibold mb-2">Plugin Architecture</h3>
+          <p class="text-zinc-400">Micro-kernel design with extensible plugin system. Create custom plugins for your needs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Example -->
+  <section class="py-24 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-16">Quick Start</h2>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="text-sm text-zinc-400">App.tsx</span>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('example-code').textContent)" class="text-zinc-500 hover:text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          </button>
+        </div>
+        <pre class="p-4"><code id="example-code" class="language-tsx">import { ReactScopeProvider, Scope, useScope } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;ReactScopeProvider onReady={(kernel) =&gt; console.log('Ready!', kernel)}&gt;
+      &lt;MyComponent /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}
+
+function MyComponent() {
+  const scope = useScope('MyComponent')
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Renders: {scope.renderCount}&lt;/p&gt;
+      &lt;p&gt;Avg Time: {scope.averageRenderTime.toFixed(2)}ms&lt;/p&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 px-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl font-bold mb-6">Start Optimizing Today</h2>
+      <p class="text-xl text-zinc-400 mb-8">Zero dependencies. Full TypeScript support. Production ready.</p>
+      <a href="docs/getting-started.html" class="inline-block bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-200 transition">
+        Read the Documentation
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-zinc-800 py-12 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">&#9889;</span>
+        <span class="font-semibold">ReactScope</span>
+      </div>
+      <div class="flex gap-6 text-zinc-400">
+        <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
+        <a href="docs/" class="hover:text-white transition">Documentation</a>
+      </div>
+      <p class="text-zinc-500 text-sm">MIT License</p>
+    </div>
+  </footer>
+</body>
+</html>

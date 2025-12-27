@@ -1,0 +1,173 @@
+{
+  "name": "@oxog/reactscope",
+  "version": "1.0.0",
+  "description": "Zero-dependency React performance profiler with micro-kernel plugin architecture",
+  "author": "ersinkoc",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ersinkoc/reactscope.git"
+  },
+  "homepage": "https://reactscope.oxog.dev",
+  "bugs": {
+    "url": "https://github.com/ersinkoc/reactscope/issues"
+  },
+  "keywords": [
+    "react",
+    "profiler",
+    "performance",
+    "devtools",
+    "debugging",
+    "render-tracking",
+    "optimization"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./plugins/render-tracker": {
+      "import": {
+        "types": "./dist/plugins/render-tracker/index.d.ts",
+        "default": "./dist/plugins/render-tracker/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/render-tracker/index.d.cts",
+        "default": "./dist/plugins/render-tracker/index.cjs"
+      }
+    },
+    "./plugins/props-differ": {
+      "import": {
+        "types": "./dist/plugins/props-differ/index.d.ts",
+        "default": "./dist/plugins/props-differ/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/props-differ/index.d.cts",
+        "default": "./dist/plugins/props-differ/index.cjs"
+      }
+    },
+    "./plugins/wasted-render-detector": {
+      "import": {
+        "types": "./dist/plugins/wasted-render-detector/index.d.ts",
+        "default": "./dist/plugins/wasted-render-detector/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/wasted-render-detector/index.d.cts",
+        "default": "./dist/plugins/wasted-render-detector/index.cjs"
+      }
+    },
+    "./plugins/lifecycle-tracker": {
+      "import": {
+        "types": "./dist/plugins/lifecycle-tracker/index.d.ts",
+        "default": "./dist/plugins/lifecycle-tracker/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/lifecycle-tracker/index.d.cts",
+        "default": "./dist/plugins/lifecycle-tracker/index.cjs"
+      }
+    },
+    "./plugins/dashboard-ui": {
+      "import": {
+        "types": "./dist/plugins/dashboard-ui/index.d.ts",
+        "default": "./dist/plugins/dashboard-ui/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/dashboard-ui/index.d.cts",
+        "default": "./dist/plugins/dashboard-ui/index.cjs"
+      }
+    },
+    "./plugins/console-reporter": {
+      "import": {
+        "types": "./dist/plugins/console-reporter/index.d.ts",
+        "default": "./dist/plugins/console-reporter/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/console-reporter/index.d.cts",
+        "default": "./dist/plugins/console-reporter/index.cjs"
+      }
+    },
+    "./plugins/json-exporter": {
+      "import": {
+        "types": "./dist/plugins/json-exporter/index.d.ts",
+        "default": "./dist/plugins/json-exporter/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/json-exporter/index.d.cts",
+        "default": "./dist/plugins/json-exporter/index.cjs"
+      }
+    },
+    "./plugins/timeline-recorder": {
+      "import": {
+        "types": "./dist/plugins/timeline-recorder/index.d.ts",
+        "default": "./dist/plugins/timeline-recorder/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/timeline-recorder/index.d.cts",
+        "default": "./dist/plugins/timeline-recorder/index.cjs"
+      }
+    },
+    "./plugins/memory-tracker": {
+      "import": {
+        "types": "./dist/plugins/memory-tracker/index.d.ts",
+        "default": "./dist/plugins/memory-tracker/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/memory-tracker/index.d.cts",
+        "default": "./dist/plugins/memory-tracker/index.cjs"
+      }
+    },
+    "./plugins/network-correlator": {
+      "import": {
+        "types": "./dist/plugins/network-correlator/index.d.ts",
+        "default": "./dist/plugins/network-correlator/index.js"
+      },
+      "require": {
+        "types": "./dist/plugins/network-correlator/index.d.cts",
+        "default": "./dist/plugins/network-correlator/index.cjs"
+      }
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@vitest/coverage-v8": "^1.2.2",
+    "happy-dom": "^13.3.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  },
+  "dependencies": {}
+}

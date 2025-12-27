@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - ReactScope</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="./" class="text-white">Docs</a>
+        <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-8">Getting Started</h1>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Installation</h2>
+      <p class="text-zinc-400 mb-4">Install ReactScope using your preferred package manager:</p>
+      <pre class="mb-4"><code class="language-bash">npm install @oxog/reactscope</code></pre>
+      <pre class="mb-4"><code class="language-bash">yarn add @oxog/reactscope</code></pre>
+      <pre><code class="language-bash">pnpm add @oxog/reactscope</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Basic Setup</h2>
+      <p class="text-zinc-400 mb-4">Wrap your application with <code class="bg-zinc-800 px-2 py-1 rounded">ReactScopeProvider</code>:</p>
+      <pre><code class="language-tsx">import { ReactScopeProvider } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;ReactScopeProvider&gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Using the useScope Hook</h2>
+      <p class="text-zinc-400 mb-4">Track a component's performance with the <code class="bg-zinc-800 px-2 py-1 rounded">useScope</code> hook:</p>
+      <pre><code class="language-tsx">import { useScope } from '@oxog/reactscope'
+
+function MyComponent({ data }) {
+  const scope = useScope('MyComponent')
+
+  // Access metrics
+  console.log('Render count:', scope.renderCount)
+  console.log('Average render time:', scope.averageRenderTime)
+  console.log('Wasted renders:', scope.wastedRenders)
+
+  return &lt;div&gt;{data}&lt;/div&gt;
+}</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Using the Scope Component</h2>
+      <p class="text-zinc-400 mb-4">Alternatively, wrap components with the <code class="bg-zinc-800 px-2 py-1 rounded">Scope</code> component:</p>
+      <pre><code class="language-tsx">import { Scope } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;Scope name="ExpensiveList" onRender={(metrics) =&gt; console.log(metrics)}&gt;
+      &lt;ExpensiveList items={items} /&gt;
+    &lt;/Scope&gt;
+  )
+}</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Using the Dashboard</h2>
+      <p class="text-zinc-400 mb-4">Enable the visual dashboard for real-time monitoring:</p>
+      <pre><code class="language-tsx">import { ReactScopeProvider, createDashboardUIPlugin } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      plugins={[createDashboardUIPlugin()]}
+      onReady={(kernel) =&gt; {
+        // Open dashboard with Ctrl+Shift+R
+        kernel.getPlugin('dashboard-ui')?.api.show()
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Next Steps</h2>
+      <ul class="list-disc list-inside text-zinc-400 space-y-2">
+        <li><a href="api/" class="text-blue-400 hover:underline">Explore the full API reference</a></li>
+        <li><a href="examples/" class="text-blue-400 hover:underline">See more examples</a></li>
+        <li><a href="api/plugins.html" class="text-blue-400 hover:underline">Learn about plugins</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

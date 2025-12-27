@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examples - ReactScope</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="../api/" class="text-zinc-400 hover:text-white transition">API</a>
+        <a href="./" class="text-white">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-8">Examples</h1>
+    <p class="text-zinc-400 mb-12">Learn ReactScope through practical examples. From basic setup to advanced use cases.</p>
+
+    <div class="space-y-16">
+      <!-- Basic Example -->
+      <section id="basic">
+        <h2 class="text-2xl font-semibold mb-4">Basic Usage</h2>
+        <p class="text-zinc-400 mb-4">The simplest way to get started with ReactScope.</p>
+        <pre><code class="language-tsx">import React from 'react'
+import { ReactScopeProvider, useScope } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;ReactScopeProvider&gt;
+      &lt;Counter /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}
+
+function Counter() {
+  const [count, setCount] = React.useState(0)
+  const scope = useScope('Counter')
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(c =&gt; c + 1)}&gt;Increment&lt;/button&gt;
+      &lt;p className="text-sm text-gray-500"&gt;
+        Renders: {scope.renderCount} | Avg: {scope.averageRenderTime.toFixed(2)}ms
+      &lt;/p&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- With Dashboard -->
+      <section id="dashboard">
+        <h2 class="text-2xl font-semibold mb-4">With Dashboard</h2>
+        <p class="text-zinc-400 mb-4">Enable the visual dashboard for real-time monitoring.</p>
+        <pre><code class="language-tsx">import React from 'react'
+import {
+  ReactScopeProvider,
+  useScope,
+  createDashboardUIPlugin
+} from '@oxog/reactscope'
+
+const dashboardPlugin = createDashboardUIPlugin({
+  position: 'bottom-right',
+  defaultOpen: false,
+})
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      plugins={[dashboardPlugin]}
+      onReady={(kernel) =&gt; {
+        // Dashboard can be toggled with Ctrl+Shift+R
+        console.log('ReactScope ready!')
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- Using Scope Component -->
+      <section id="scope-component">
+        <h2 class="text-2xl font-semibold mb-4">Using Scope Component</h2>
+        <p class="text-zinc-400 mb-4">Wrap any component without modifying its code.</p>
+        <pre><code class="language-tsx">import React from 'react'
+import { Scope } from '@oxog/reactscope'
+
+function App() {
+  const [items, setItems] = React.useState([])
+
+  return (
+    &lt;div&gt;
+      &lt;Scope name="ExpensiveList" onRender={(m) =&gt; console.log(m)}&gt;
+        &lt;ExpensiveList items={items} /&gt;
+      &lt;/Scope&gt;
+
+      &lt;Scope name="Sidebar"&gt;
+        &lt;Sidebar /&gt;
+      &lt;/Scope&gt;
+    &lt;/div&gt;
+  )
+}
+
+// Works with third-party components too
+function ThirdPartyWrapper() {
+  return (
+    &lt;Scope name="DataGrid"&gt;
+      &lt;ThirdPartyDataGrid data={data} /&gt;
+    &lt;/Scope&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- Using HOC -->
+      <section id="hoc">
+        <h2 class="text-2xl font-semibold mb-4">Using Higher-Order Component</h2>
+        <p class="text-zinc-400 mb-4">Add profiling to components using the withScope HOC.</p>
+        <pre><code class="language-tsx">import React from 'react'
+import { withScope } from '@oxog/reactscope'
+
+// Original component
+function UserCard({ user }) {
+  return (
+    &lt;div className="card"&gt;
+      &lt;img src={user.avatar} alt={user.name} /&gt;
+      &lt;h3&gt;{user.name}&lt;/h3&gt;
+      &lt;p&gt;{user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  )
+}
+
+// Enhanced with profiling
+export const ProfiledUserCard = withScope(UserCard, {
+  name: 'UserCard',
+  trackProps: true,
+  onRender: (metrics) =&gt; {
+    if (metrics.wastedRenderCount &gt; 0) {
+      console.warn('UserCard has wasted renders!')
+    }
+  }
+})
+
+// Usage
+function UserList({ users }) {
+  return (
+    &lt;div&gt;
+      {users.map(user =&gt; (
+        &lt;ProfiledUserCard key={user.id} user={user} /&gt;
+      ))}
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- Custom Plugin -->
+      <section id="custom-plugin">
+        <h2 class="text-2xl font-semibold mb-4">Creating a Custom Plugin</h2>
+        <p class="text-zinc-400 mb-4">Extend ReactScope with your own plugin.</p>
+        <pre><code class="language-tsx">import { createPlugin, ReactScopeProvider } from '@oxog/reactscope'
+
+// Create a custom analytics plugin
+const analyticsPlugin = createPlugin({
+  name: 'analytics',
+  version: '1.0.0',
+
+  onInit: (kernel) =&gt; {
+    console.log('Analytics plugin initialized')
+  },
+
+  hooks: {
+    onRender: (event) =&gt; {
+      // Send to analytics service
+      if (event.duration &gt; 16) {
+        sendToAnalytics('slow_render', {
+          component: event.componentName,
+          duration: event.duration,
+          timestamp: Date.now()
+        })
+      }
+    },
+
+    onMount: (event) =&gt; {
+      sendToAnalytics('component_mount', {
+        component: event.componentName,
+        timestamp: Date.now()
+      })
+    }
+  },
+
+  api: {
+    getSlowRenderCount: () =&gt; slowRenderCount,
+    reset: () =&gt; { slowRenderCount = 0 }
+  }
+})
+
+function App() {
+  return (
+    &lt;ReactScopeProvider plugins={[analyticsPlugin]}&gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- Performance Monitoring -->
+      <section id="performance">
+        <h2 class="text-2xl font-semibold mb-4">Performance Monitoring Dashboard</h2>
+        <p class="text-zinc-400 mb-4">Build a custom performance monitoring component.</p>
+        <pre><code class="language-tsx">import React from 'react'
+import { useAllScopeMetrics, useScopeSummary } from '@oxog/reactscope'
+
+function PerformanceMonitor() {
+  const allMetrics = useAllScopeMetrics()
+  const summary = useScopeSummary()
+
+  const slowComponents = React.useMemo(() =&gt; {
+    return Array.from(allMetrics.values())
+      .filter(m =&gt; m.averageRenderTime &gt; 16)
+      .sort((a, b) =&gt; b.averageRenderTime - a.averageRenderTime)
+      .slice(0, 10)
+  }, [allMetrics])
+
+  const wastedComponents = React.useMemo(() =&gt; {
+    return Array.from(allMetrics.values())
+      .filter(m =&gt; m.wastedRenderCount &gt; 0)
+      .sort((a, b) =&gt; b.wastedRenderCount - a.wastedRenderCount)
+      .slice(0, 10)
+  }, [allMetrics])
+
+  return (
+    &lt;div className="p-4 bg-gray-900 rounded-lg"&gt;
+      &lt;h2 className="text-xl font-bold mb-4"&gt;Performance Overview&lt;/h2&gt;
+
+      &lt;div className="grid grid-cols-4 gap-4 mb-6"&gt;
+        &lt;StatCard label="Components" value={summary.totalComponents} /&gt;
+        &lt;StatCard label="Total Renders" value={summary.totalRenders} /&gt;
+        &lt;StatCard
+          label="Wasted Renders"
+          value={summary.totalWastedRenders}
+          warning={summary.totalWastedRenders &gt; 10}
+        /&gt;
+        &lt;StatCard
+          label="Avg Render Time"
+          value={`${summary.averageRenderTime.toFixed(2)}ms`}
+          warning={summary.averageRenderTime &gt; 16}
+        /&gt;
+      &lt;/div&gt;
+
+      &lt;div className="grid grid-cols-2 gap-4"&gt;
+        &lt;div&gt;
+          &lt;h3 className="font-semibold mb-2"&gt;Slowest Components&lt;/h3&gt;
+          &lt;ul&gt;
+            {slowComponents.map(m =&gt; (
+              &lt;li key={m.componentId} className="text-sm"&gt;
+                {m.componentName}: {m.averageRenderTime.toFixed(2)}ms
+              &lt;/li&gt;
+            ))}
+          &lt;/ul&gt;
+        &lt;/div&gt;
+
+        &lt;div&gt;
+          &lt;h3 className="font-semibold mb-2"&gt;Most Wasted Renders&lt;/h3&gt;
+          &lt;ul&gt;
+            {wastedComponents.map(m =&gt; (
+              &lt;li key={m.componentId} className="text-sm"&gt;
+                {m.componentName}: {m.wastedRenderCount} wasted
+              &lt;/li&gt;
+            ))}
+          &lt;/ul&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+
+function StatCard({ label, value, warning }) {
+  return (
+    &lt;div className={`p-3 rounded ${warning ? 'bg-red-900/50' : 'bg-gray-800'}`}&gt;
+      &lt;div className="text-sm text-gray-400"&gt;{label}&lt;/div&gt;
+      &lt;div className="text-2xl font-bold"&gt;{value}&lt;/div&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      </section>
+
+      <!-- CI/CD Integration -->
+      <section id="ci-cd">
+        <h2 class="text-2xl font-semibold mb-4">CI/CD Integration</h2>
+        <p class="text-zinc-400 mb-4">Export metrics for performance regression testing.</p>
+        <pre><code class="language-tsx">import {
+  ReactScopeProvider,
+  createJsonExporterPlugin,
+  getKernel
+} from '@oxog/reactscope'
+
+const jsonExporter = createJsonExporterPlugin({
+  includeTimeline: true,
+  pretty: true
+})
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      plugins={[jsonExporter]}
+      onReady={(kernel) =&gt; {
+        // Export metrics after test run
+        window.__exportMetrics = () =&gt; {
+          const exporter = kernel.getPlugin('json-exporter')
+          return exporter?.api?.export()
+        }
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}
+
+// In your test file (e.g., Cypress, Playwright)
+// cy.window().invoke('__exportMetrics').then((json) =&gt; {
+//   const metrics = JSON.parse(json)
+//   expect(metrics.summary.averageRenderTime).to.be.lessThan(16)
+// })</code></pre>
+      </section>
+
+      <!-- Conditional Profiling -->
+      <section id="conditional">
+        <h2 class="text-2xl font-semibold mb-4">Conditional Profiling</h2>
+        <p class="text-zinc-400 mb-4">Enable profiling only in development or for specific users.</p>
+        <pre><code class="language-tsx">import React from 'react'
+import { ReactScopeProvider, createDashboardUIPlugin } from '@oxog/reactscope'
+
+const isDev = process.env.NODE_ENV === 'development'
+const isDebugUser = localStorage.getItem('debug') === 'true'
+
+const plugins = isDev ? [createDashboardUIPlugin()] : []
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      enabled={isDev || isDebugUser}
+      plugins={plugins}
+      options={{
+        sampleRate: isDev ? 1 : 0.1, // Sample 10% in production
+        maxHistorySize: isDev ? 1000 : 100
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+      </section>
+    </div>
+
+    <section class="mt-16 pt-8 border-t border-zinc-800">
+      <h2 class="text-2xl font-semibold mb-4">Example Projects</h2>
+      <p class="text-zinc-400 mb-6">Check out these complete example projects:</p>
+      <div class="grid md:grid-cols-3 gap-4">
+        <a href="https://github.com/ersinkoc/reactscope/tree/main/examples/basic" class="block p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition">
+          <h3 class="font-semibold mb-2">Basic Example</h3>
+          <p class="text-sm text-zinc-400">Simple setup with useScope hook</p>
+        </a>
+        <a href="https://github.com/ersinkoc/reactscope/tree/main/examples/advanced" class="block p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition">
+          <h3 class="font-semibold mb-2">Advanced Example</h3>
+          <p class="text-sm text-zinc-400">Full setup with dashboard and plugins</p>
+        </a>
+        <a href="https://github.com/ersinkoc/reactscope/tree/main/examples/with-custom-plugin" class="block p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition">
+          <h3 class="font-semibold mb-2">Custom Plugin</h3>
+          <p class="text-sm text-zinc-400">Creating and using custom plugins</p>
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
