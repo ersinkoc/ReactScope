@@ -124,7 +124,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen antialiased" x-data="{ mobileMenu: false, installTab: 'npm', copied: false }">
+<body class="min-h-screen antialiased" x-data="{ mobileMenu: false, installTab: 'npm', copied: false, searchOpen: false, searchQuery: '', searchResults: [] }" @keydown.window.escape="searchOpen = false" @keydown.window.meta.k.prevent="searchOpen = true" @keydown.window.ctrl.k.prevent="searchOpen = true">
 
   <!-- Navigation -->
   <header class="fixed top-0 left-0 right-0 z-50 nav-blur">
@@ -147,6 +147,14 @@
         </nav>
 
         <div class="flex items-center gap-3">
+          <!-- Search Button -->
+          <button @click="searchOpen = true" class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-zinc-400 hover:text-white transition rounded-lg bg-white/5 hover:bg-white/10 border border-white/10">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span class="text-sm">Search</span>
+            <kbd class="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-zinc-500 bg-dark-800 rounded border border-white/10">
+              <span>&#8984;</span>K
+            </kbd>
+          </button>
           <a href="https://github.com/ersinkoc/reactscope" class="hidden sm:flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-white/5">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             <span>GitHub</span>
@@ -300,6 +308,73 @@ function Dashboard() {
     </div>
   </section>
 
+  <!-- How It Works Section -->
+  <section class="py-24 lg:py-32 relative overflow-hidden">
+    <div class="absolute inset-0">
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">How It Works</h2>
+        <p class="text-lg text-zinc-400 max-w-2xl mx-auto">Three simple steps to start profiling your React application.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-xl font-bold text-accent border border-accent/30">1</div>
+          <div class="gradient-border p-6 pt-10 h-full">
+            <h3 class="text-xl font-semibold mb-3">Wrap Your App</h3>
+            <p class="text-zinc-400 mb-4">Wrap your root component with ReactScopeProvider. Zero configuration needed.</p>
+            <div class="code-window text-sm">
+              <div class="code-window-header">
+                <span class="text-xs text-zinc-500">main.tsx</span>
+              </div>
+              <pre class="p-3 overflow-x-auto"><code class="language-tsx">&lt;ReactScopeProvider&gt;
+  &lt;App /&gt;
+&lt;/ReactScopeProvider&gt;</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-xl font-bold text-purple-400 border border-purple-500/30">2</div>
+          <div class="gradient-border p-6 pt-10 h-full">
+            <h3 class="text-xl font-semibold mb-3">Add useScope Hook</h3>
+            <p class="text-zinc-400 mb-4">Use the hook in any component you want to profile. Get instant metrics.</p>
+            <div class="code-window text-sm">
+              <div class="code-window-header">
+                <span class="text-xs text-zinc-500">Dashboard.tsx</span>
+              </div>
+              <pre class="p-3 overflow-x-auto"><code class="language-tsx">function Dashboard() {
+  const scope = useScope('Dashboard')
+  // Your component logic
+}</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center text-xl font-bold text-pink-400 border border-pink-500/30">3</div>
+          <div class="gradient-border p-6 pt-10 h-full">
+            <h3 class="text-xl font-semibold mb-3">Analyze Metrics</h3>
+            <p class="text-zinc-400 mb-4">Access real-time metrics including render counts, timing, and wasted renders.</p>
+            <div class="code-window text-sm">
+              <div class="code-window-header">
+                <span class="text-xs text-zinc-500">output</span>
+              </div>
+              <pre class="p-3 overflow-x-auto"><code class="language-tsx">scope.renderCount    // 42
+scope.averageRenderTime // 1.23ms
+scope.wastedRenders  // 5</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Features Section -->
   <section class="py-24 lg:py-32">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -355,6 +430,134 @@ function Dashboard() {
           </div>
           <h3 class="text-xl font-semibold mb-2">Plugin Architecture</h3>
           <p class="text-zinc-400">Micro-kernel design lets you extend functionality with custom plugins.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo Section -->
+  <section class="py-24 lg:py-32 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent" x-data="interactiveDemo()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium mb-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Interactive Demo
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">See It In Action</h2>
+        <p class="text-lg text-zinc-400 max-w-2xl mx-auto">Click the buttons below to simulate component renders and watch ReactScope track the metrics in real-time.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-8 items-start">
+        <!-- Simulated Component -->
+        <div class="gradient-border p-6 glow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+              UserProfile Component
+            </h3>
+            <span class="text-xs text-zinc-500 font-mono">id: comp_01</span>
+          </div>
+
+          <!-- Simulated Component UI -->
+          <div class="bg-dark-900/50 rounded-xl p-6 mb-6">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center text-2xl font-bold">
+                <span x-text="user.name.charAt(0)">U</span>
+              </div>
+              <div>
+                <h4 class="font-semibold text-lg" x-text="user.name">User Name</h4>
+                <p class="text-zinc-400 text-sm" x-text="user.email">user@example.com</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div class="bg-dark-800/50 rounded-lg p-3">
+                <div class="text-xl font-bold text-accent" x-text="user.posts">0</div>
+                <div class="text-xs text-zinc-500">Posts</div>
+              </div>
+              <div class="bg-dark-800/50 rounded-lg p-3">
+                <div class="text-xl font-bold text-purple-400" x-text="user.followers">0</div>
+                <div class="text-xs text-zinc-500">Followers</div>
+              </div>
+              <div class="bg-dark-800/50 rounded-lg p-3">
+                <div class="text-xl font-bold text-pink-400" x-text="user.likes">0</div>
+                <div class="text-xs text-zinc-500">Likes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 gap-3">
+            <button @click="updateProps()" class="px-4 py-3 bg-accent/20 hover:bg-accent/30 text-accent-light rounded-lg transition flex items-center justify-center gap-2 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Update Props
+            </button>
+            <button @click="triggerRender()" class="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition flex items-center justify-center gap-2 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+              Trigger Render
+            </button>
+            <button @click="wastedRender()" class="px-4 py-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg transition flex items-center justify-center gap-2 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              Wasted Render
+            </button>
+            <button @click="resetDemo()" class="px-4 py-3 bg-zinc-500/20 hover:bg-zinc-500/30 text-zinc-400 rounded-lg transition flex items-center justify-center gap-2 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Panel -->
+        <div class="space-y-4">
+          <!-- Real-time Metrics -->
+          <div class="gradient-border p-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Real-time Metrics
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-dark-900/50 rounded-lg p-4">
+                <div class="text-3xl font-bold text-blue-400 mb-1" x-text="metrics.renderCount">0</div>
+                <div class="text-sm text-zinc-500">Total Renders</div>
+              </div>
+              <div class="bg-dark-900/50 rounded-lg p-4">
+                <div class="text-3xl font-bold text-green-400 mb-1"><span x-text="metrics.avgRenderTime.toFixed(2)">0.00</span><span class="text-lg">ms</span></div>
+                <div class="text-sm text-zinc-500">Avg Render Time</div>
+              </div>
+              <div class="bg-dark-900/50 rounded-lg p-4">
+                <div class="text-3xl font-bold text-amber-400 mb-1" x-text="metrics.wastedRenders">0</div>
+                <div class="text-sm text-zinc-500">Wasted Renders</div>
+              </div>
+              <div class="bg-dark-900/50 rounded-lg p-4">
+                <div class="text-3xl font-bold text-purple-400 mb-1" x-text="metrics.propsChanges">0</div>
+                <div class="text-sm text-zinc-500">Props Changes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Event Log -->
+          <div class="gradient-border p-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Event Log
+            </h3>
+            <div class="bg-dark-900/50 rounded-lg p-4 h-48 overflow-y-auto font-mono text-sm space-y-2" id="event-log">
+              <template x-for="(event, index) in events" :key="index">
+                <div class="flex items-start gap-2 animate-fade-in">
+                  <span class="text-zinc-600" x-text="event.time">00:00</span>
+                  <span :class="{
+                    'text-blue-400': event.type === 'render',
+                    'text-amber-400': event.type === 'wasted',
+                    'text-green-400': event.type === 'props',
+                    'text-purple-400': event.type === 'mount'
+                  }" x-text="'[' + event.type.toUpperCase() + ']'"></span>
+                  <span class="text-zinc-300" x-text="event.message"></span>
+                </div>
+              </template>
+              <div x-show="events.length === 0" class="text-zinc-600 text-center py-8">
+                Click buttons to see events...
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -420,6 +623,89 @@ function Dashboard() {
     </div>
   </section>
 
+  <!-- Comparison Section -->
+  <section class="py-24 lg:py-32 bg-gradient-to-b from-transparent via-dark-800/50 to-transparent">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Why ReactScope?</h2>
+        <p class="text-lg text-zinc-400 max-w-2xl mx-auto">See how ReactScope compares to other profiling solutions.</p>
+      </div>
+
+      <div class="gradient-border overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="p-4 text-zinc-400 font-medium">Feature</th>
+                <th class="p-4 text-center">
+                  <span class="gradient-text font-bold">ReactScope</span>
+                </th>
+                <th class="p-4 text-center text-zinc-400">React DevTools</th>
+                <th class="p-4 text-center text-zinc-400">why-did-you-render</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Zero Dependencies</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-zinc-600">-</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Programmatic API</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+                <td class="p-4 text-center"><span class="text-zinc-600">~</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Plugin Architecture</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Memory Tracking</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-zinc-600">~</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Network Correlation</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">JSON Export</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-zinc-600">~</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Production Safe</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-red-400 text-xl">&#10005;</span></td>
+                <td class="p-4 text-center"><span class="text-zinc-600">~</span></td>
+              </tr>
+              <tr class="hover:bg-white/[0.02]">
+                <td class="p-4 text-zinc-300">Full TypeScript</td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+                <td class="p-4 text-center"><span class="text-green-400 text-xl">&#10003;</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="text-center text-zinc-500 text-sm mt-4">
+        <span class="text-green-400">&#10003;</span> Supported &nbsp;&nbsp;
+        <span class="text-zinc-600">~</span> Partial &nbsp;&nbsp;
+        <span class="text-red-400">&#10005;</span> Not Supported
+      </p>
+    </div>
+  </section>
+
   <!-- CTA Section -->
   <section class="py-24 lg:py-32">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -439,6 +725,86 @@ function Dashboard() {
       </div>
     </div>
   </section>
+
+  <!-- Search Modal -->
+  <div x-show="searchOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-[100] overflow-y-auto" @click="searchOpen = false">
+    <div class="min-h-screen px-4 py-20 flex items-start justify-center">
+      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+      <div @click.stop class="relative w-full max-w-2xl bg-dark-800 border border-white/10 rounded-2xl shadow-2xl overflow-hidden" x-data="searchComponent()">
+        <!-- Search Input -->
+        <div class="flex items-center gap-4 p-4 border-b border-white/10">
+          <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input
+            x-model="query"
+            @input="search()"
+            type="text"
+            placeholder="Search documentation..."
+            class="flex-1 bg-transparent text-white placeholder-zinc-500 outline-none text-lg"
+            x-ref="searchInput"
+            x-init="$nextTick(() => $refs.searchInput.focus())"
+          >
+          <kbd class="px-2 py-1 text-xs text-zinc-500 bg-dark-900 rounded border border-white/10">ESC</kbd>
+        </div>
+
+        <!-- Search Results -->
+        <div class="max-h-96 overflow-y-auto p-2">
+          <template x-if="query.length === 0">
+            <div class="p-8 text-center">
+              <div class="text-zinc-500 mb-4">Quick Links</div>
+              <div class="grid grid-cols-2 gap-2">
+                <a href="docs/getting-started.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition text-left">
+                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <span class="text-zinc-300">Getting Started</span>
+                </a>
+                <a href="docs/api/hooks.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition text-left">
+                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span class="text-zinc-300">useScope Hook</span>
+                </a>
+                <a href="docs/api/provider.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition text-left">
+                  <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/></svg>
+                  <span class="text-zinc-300">Provider</span>
+                </a>
+                <a href="docs/api/plugins.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition text-left">
+                  <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+                  <span class="text-zinc-300">Plugins</span>
+                </a>
+              </div>
+            </div>
+          </template>
+
+          <template x-if="query.length > 0 && results.length === 0">
+            <div class="p-8 text-center text-zinc-500">
+              <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p>No results found for "<span x-text="query"></span>"</p>
+            </div>
+          </template>
+
+          <template x-for="result in results" :key="result.url">
+            <a :href="result.url" class="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" :class="result.iconBg">
+                <span x-html="result.icon"></span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-white" x-text="result.title"></div>
+                <div class="text-sm text-zinc-400 truncate" x-text="result.description"></div>
+                <div class="text-xs text-zinc-600 mt-1" x-text="result.category"></div>
+              </div>
+              <svg class="w-4 h-4 text-zinc-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </template>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-3 border-t border-white/10 bg-dark-900/50 flex items-center justify-between text-xs text-zinc-500">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 bg-dark-700 rounded">&#8593;</kbd><kbd class="px-1.5 py-0.5 bg-dark-700 rounded">&#8595;</kbd> Navigate</span>
+            <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 bg-dark-700 rounded">&#8629;</kbd> Open</span>
+          </div>
+          <span>Powered by ReactScope</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="border-t border-white/5 py-12">
@@ -489,6 +855,155 @@ function Dashboard() {
 
   <script>
     Prism.highlightAll();
+
+    // Search Component
+    function searchComponent() {
+      const searchIndex = [
+        // Getting Started
+        { title: 'Installation', description: 'Install ReactScope via npm, yarn, or pnpm', url: 'docs/getting-started.html', category: 'Getting Started', keywords: ['install', 'npm', 'yarn', 'pnpm', 'setup'], iconBg: 'bg-blue-500/20', icon: '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>' },
+        { title: 'Basic Setup', description: 'Wrap your app with ReactScopeProvider', url: 'docs/getting-started.html#setup', category: 'Getting Started', keywords: ['provider', 'setup', 'wrap', 'app', 'basic'], iconBg: 'bg-blue-500/20', icon: '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>' },
+
+        // API Reference
+        { title: 'ReactScopeProvider', description: 'Root provider component for ReactScope', url: 'docs/api/provider.html', category: 'API Reference', keywords: ['provider', 'context', 'root', 'component', 'wrapper'], iconBg: 'bg-green-500/20', icon: '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/></svg>' },
+        { title: 'useScope Hook', description: 'Profile individual components with useScope', url: 'docs/api/hooks.html', category: 'API Reference', keywords: ['hook', 'useScope', 'profiler', 'metrics', 'render'], iconBg: 'bg-purple-500/20', icon: '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>' },
+        { title: 'useKernel Hook', description: 'Access the kernel directly', url: 'docs/api/hooks.html#usekernel', category: 'API Reference', keywords: ['hook', 'kernel', 'access', 'api'], iconBg: 'bg-purple-500/20', icon: '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>' },
+        { title: 'ScopeDashboard', description: 'Built-in visual dashboard component', url: 'docs/api/components.html', category: 'API Reference', keywords: ['dashboard', 'ui', 'visual', 'component'], iconBg: 'bg-cyan-500/20', icon: '<svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>' },
+
+        // Plugins
+        { title: 'Plugins Overview', description: 'Learn about the plugin system', url: 'docs/api/plugins.html', category: 'Plugins', keywords: ['plugin', 'architecture', 'extend', 'custom'], iconBg: 'bg-amber-500/20', icon: '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>' },
+        { title: 'Render Tracker', description: 'Track component render times', url: 'docs/api/plugins.html#render-tracker', category: 'Plugins', keywords: ['render', 'track', 'time', 'performance'], iconBg: 'bg-amber-500/20', icon: '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>' },
+        { title: 'Wasted Render Detector', description: 'Detect unnecessary re-renders', url: 'docs/api/plugins.html#wasted-render', category: 'Plugins', keywords: ['wasted', 'render', 'unnecessary', 'optimize'], iconBg: 'bg-red-500/20', icon: '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>' },
+        { title: 'Props Differ', description: 'Track props changes between renders', url: 'docs/api/plugins.html#props-differ', category: 'Plugins', keywords: ['props', 'diff', 'change', 'compare'], iconBg: 'bg-amber-500/20', icon: '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>' },
+        { title: 'Memory Tracker', description: 'Monitor memory usage', url: 'docs/api/plugins.html#memory', category: 'Plugins', keywords: ['memory', 'heap', 'usage', 'leak'], iconBg: 'bg-amber-500/20', icon: '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>' },
+
+        // Examples
+        { title: 'Basic Usage', description: 'Simple example to get started', url: 'docs/examples/basic.html', category: 'Examples', keywords: ['basic', 'simple', 'example', 'start'], iconBg: 'bg-pink-500/20', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+        { title: 'Custom Plugin', description: 'Create your own plugin', url: 'docs/examples/custom-plugin.html', category: 'Examples', keywords: ['custom', 'plugin', 'create', 'extend'], iconBg: 'bg-pink-500/20', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+        { title: 'Production Usage', description: 'Best practices for production', url: 'docs/examples/production.html', category: 'Examples', keywords: ['production', 'best', 'practices', 'deploy'], iconBg: 'bg-pink-500/20', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+      ];
+
+      return {
+        query: '',
+        results: [],
+        search() {
+          if (this.query.length === 0) {
+            this.results = [];
+            return;
+          }
+          const q = this.query.toLowerCase();
+          this.results = searchIndex.filter(item => {
+            return item.title.toLowerCase().includes(q) ||
+                   item.description.toLowerCase().includes(q) ||
+                   item.keywords.some(k => k.includes(q));
+          }).slice(0, 8);
+        }
+      };
+    }
+
+    // Interactive Demo Component
+    function interactiveDemo() {
+      const names = ['Alex Johnson', 'Sarah Chen', 'Mike Wilson', 'Emma Davis', 'Chris Lee'];
+      const emails = ['alex@example.com', 'sarah@example.com', 'mike@example.com', 'emma@example.com', 'chris@example.com'];
+
+      return {
+        user: {
+          name: 'Alex Johnson',
+          email: 'alex@example.com',
+          posts: 42,
+          followers: 1337,
+          likes: 2048
+        },
+        metrics: {
+          renderCount: 0,
+          avgRenderTime: 0,
+          wastedRenders: 0,
+          propsChanges: 0,
+          totalRenderTime: 0
+        },
+        events: [],
+        startTime: Date.now(),
+
+        getTime() {
+          const elapsed = Date.now() - this.startTime;
+          const seconds = Math.floor(elapsed / 1000);
+          const ms = elapsed % 1000;
+          return `${String(seconds).padStart(2, '0')}:${String(Math.floor(ms / 10)).padStart(2, '0')}`;
+        },
+
+        addEvent(type, message) {
+          this.events.unshift({ type, message, time: this.getTime() });
+          if (this.events.length > 20) this.events.pop();
+        },
+
+        updateProps() {
+          const renderTime = Math.random() * 3 + 0.5;
+          this.metrics.renderCount++;
+          this.metrics.propsChanges++;
+          this.metrics.totalRenderTime += renderTime;
+          this.metrics.avgRenderTime = this.metrics.totalRenderTime / this.metrics.renderCount;
+
+          // Update user data
+          this.user.posts += Math.floor(Math.random() * 5);
+          this.user.followers += Math.floor(Math.random() * 100);
+          this.user.likes += Math.floor(Math.random() * 50);
+
+          this.addEvent('props', `Props changed: posts=${this.user.posts}, followers=${this.user.followers}`);
+          this.addEvent('render', `Render completed in ${renderTime.toFixed(2)}ms (update phase)`);
+        },
+
+        triggerRender() {
+          const renderTime = Math.random() * 2 + 0.3;
+          this.metrics.renderCount++;
+          this.metrics.totalRenderTime += renderTime;
+          this.metrics.avgRenderTime = this.metrics.totalRenderTime / this.metrics.renderCount;
+
+          this.addEvent('render', `Render completed in ${renderTime.toFixed(2)}ms (update phase)`);
+        },
+
+        wastedRender() {
+          const renderTime = Math.random() * 1.5 + 0.2;
+          this.metrics.renderCount++;
+          this.metrics.wastedRenders++;
+          this.metrics.totalRenderTime += renderTime;
+          this.metrics.avgRenderTime = this.metrics.totalRenderTime / this.metrics.renderCount;
+
+          this.addEvent('wasted', `Wasted render detected! No props/state change (${renderTime.toFixed(2)}ms)`);
+          this.addEvent('render', `Render completed in ${renderTime.toFixed(2)}ms (update phase)`);
+        },
+
+        resetDemo() {
+          const randomIndex = Math.floor(Math.random() * names.length);
+          this.user = {
+            name: names[randomIndex],
+            email: emails[randomIndex],
+            posts: Math.floor(Math.random() * 100),
+            followers: Math.floor(Math.random() * 5000),
+            likes: Math.floor(Math.random() * 10000)
+          };
+          this.metrics = {
+            renderCount: 1,
+            avgRenderTime: 2.5,
+            wastedRenders: 0,
+            propsChanges: 0,
+            totalRenderTime: 2.5
+          };
+          this.events = [];
+          this.startTime = Date.now();
+          this.addEvent('mount', `UserProfile mounted with user: ${this.user.name}`);
+          this.addEvent('render', `Initial render completed in 2.50ms (mount phase)`);
+        }
+      };
+    }
   </script>
+
+  <style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out forwards;
+    }
+  </style>
 </body>
 </html>
