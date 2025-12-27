@@ -3,42 +3,253 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plugins - ReactScope API</title>
+  <title>Plugins API - ReactScope</title>
+  <meta name="description" content="ReactScope includes 10 built-in plugins. Learn about each plugin and how to create custom ones.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
   <style>
-    body { background: #0a0a0a; color: #fafafa; }
-    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+    :root {
+      --bg-primary: #050505;
+      --accent: #3b82f6;
+    }
+    body {
+      background: var(--bg-primary);
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s ease;
+    }
+    .glow-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+    }
+    .sidebar-link {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .sidebar-link:hover {
+      color: #fff;
+      padding-left: 0.5rem;
+    }
+    .sidebar-link.active {
+      color: #60a5fa;
+    }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #3b82f6, #a78bfa);
+      border-radius: 2px;
+    }
+    pre[class*="language-"] {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      margin: 0;
+      padding: 1.25rem !important;
+    }
+    code[class*="language-"] {
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .api-section {
+      scroll-margin-top: 100px;
+    }
+    .plugin-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .plugin-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .plugin-card:hover::before {
+      opacity: 1;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="../../../" class="flex items-center gap-2">
-        <span class="text-2xl">&#9889;</span>
-        <span class="font-bold text-xl">ReactScope</span>
-      </a>
-      <nav class="flex items-center gap-6">
-        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
-        <a href="./" class="text-white">API</a>
-        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
-      </nav>
+<body class="min-h-screen" x-data="{ mobileMenu: false }">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-white/5 sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="../../../" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+            <span class="text-lg">⚡</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight">ReactScope</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="../../" class="text-zinc-400 hover:text-white transition">Docs</a>
+          <a href="./" class="text-white font-medium">API</a>
+          <a href="../../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </nav>
+
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 text-zinc-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path x-show="mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div x-show="mobileMenu" x-transition class="md:hidden py-4 border-t border-white/5 mt-4">
+        <nav class="flex flex-col gap-4">
+          <a href="../../" class="text-zinc-400 hover:text-white transition">Docs</a>
+          <a href="./" class="text-white font-medium">API</a>
+          <a href="../../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-16">
-    <h1 class="text-4xl font-bold mb-8">Plugins Reference</h1>
-    <p class="text-zinc-400 mb-12">ReactScope includes 10 built-in plugins. All plugins follow the micro-kernel architecture and can be enabled/disabled independently.</p>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
 
-    <div class="space-y-16">
-      <!-- render-tracker -->
-      <section id="render-tracker">
-        <h2 class="text-2xl font-semibold mb-4">render-tracker</h2>
-        <p class="text-zinc-400 mb-4">Tracks render count, duration, and maintains render history for each component.</p>
-        <pre><code class="language-typescript">import { createRenderTrackerPlugin } from '@oxog/reactscope'
+      <!-- Sidebar -->
+      <aside class="hidden lg:block lg:col-span-3">
+        <nav class="sticky top-24 space-y-8">
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">API Reference</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="provider.html" class="sidebar-link text-zinc-400 text-sm">Provider</a></li>
+              <li><a href="hooks.html" class="sidebar-link text-zinc-400 text-sm">Hooks</a></li>
+              <li><a href="components.html" class="sidebar-link text-zinc-400 text-sm">Components</a></li>
+              <li><a href="plugins.html" class="sidebar-link active text-zinc-400 text-sm">Plugins</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">Built-in Plugins</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="#render-tracker" class="sidebar-link text-zinc-400 text-sm">render-tracker</a></li>
+              <li><a href="#props-differ" class="sidebar-link text-zinc-400 text-sm">props-differ</a></li>
+              <li><a href="#wasted-render" class="sidebar-link text-zinc-400 text-sm">wasted-render</a></li>
+              <li><a href="#dashboard-ui" class="sidebar-link text-zinc-400 text-sm">dashboard-ui</a></li>
+              <li><a href="#custom-plugins" class="sidebar-link text-zinc-400 text-sm">Custom Plugins</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="lg:col-span-9">
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-zinc-500 mb-8">
+          <a href="../../" class="hover:text-white transition">Docs</a>
+          <span class="mx-2">/</span>
+          <a href="./" class="hover:text-white transition">API</a>
+          <span class="mx-2">/</span>
+          <span class="text-zinc-300">Plugins</span>
+        </nav>
+
+        <!-- Hero -->
+        <div class="mb-12">
+          <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+            <span class="gradient-text">Plugins</span>
+          </h1>
+          <p class="text-xl text-zinc-400 max-w-2xl">
+            ReactScope includes 10 built-in plugins. All plugins follow the micro-kernel architecture and can be enabled/disabled independently.
+          </p>
+        </div>
+
+        <!-- Plugin Grid Overview -->
+        <div class="grid sm:grid-cols-2 gap-4 mb-16">
+          <div class="glow-card rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <span class="font-medium text-sm">render-tracker</span>
+            </div>
+            <p class="text-xs text-zinc-500">Track render counts and duration</p>
+          </div>
+          <div class="glow-card rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+              </div>
+              <span class="font-medium text-sm">props-differ</span>
+            </div>
+            <p class="text-xs text-zinc-500">Deep comparison of props</p>
+          </div>
+          <div class="glow-card rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <span class="font-medium text-sm">wasted-render-detector</span>
+            </div>
+            <p class="text-xs text-zinc-500">Detect unnecessary re-renders</p>
+          </div>
+          <div class="glow-card rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <span class="font-medium text-sm">dashboard-ui</span>
+            </div>
+            <p class="text-xs text-zinc-500">Visual overlay panel</p>
+          </div>
+        </div>
+
+        <!-- render-tracker -->
+        <section id="render-tracker" class="api-section mb-12">
+          <div class="plugin-card glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">render-tracker</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Tracks render count, duration, and maintains render history for each component.</p>
+            <pre><code class="language-typescript">import { createRenderTrackerPlugin } from '@oxog/reactscope'
 
 const plugin = createRenderTrackerPlugin({
   maxHistorySize: 100,    // Max renders to keep in history
@@ -52,13 +263,22 @@ interface RenderTrackerAPI {
   getSlowRenders(threshold?: number): RenderRecord[]
   clearHistory(): void
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- props-differ -->
-      <section id="props-differ">
-        <h2 class="text-2xl font-semibold mb-4">props-differ</h2>
-        <p class="text-zinc-400 mb-4">Performs deep comparison of props between renders to identify what changed.</p>
-        <pre><code class="language-typescript">import { createPropsDifferPlugin } from '@oxog/reactscope'
+        <!-- props-differ -->
+        <section id="props-differ" class="api-section mb-12">
+          <div class="plugin-card glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">props-differ</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Performs deep comparison of props between renders to identify what changed.</p>
+            <pre><code class="language-typescript">import { createPropsDifferPlugin } from '@oxog/reactscope'
 
 const plugin = createPropsDifferPlugin({
   maxDepth: 5,            // Max depth for deep comparison
@@ -71,13 +291,22 @@ interface PropsDifferAPI {
   getChanges(componentId: string): PropChange[]
   getMostChangedProps(componentId: string, limit?: number): PropStat[]
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- wasted-render-detector -->
-      <section id="wasted-render-detector">
-        <h2 class="text-2xl font-semibold mb-4">wasted-render-detector</h2>
-        <p class="text-zinc-400 mb-4">Detects unnecessary re-renders where props and state haven't changed.</p>
-        <pre><code class="language-typescript">import { createWastedRenderDetectorPlugin } from '@oxog/reactscope'
+        <!-- wasted-render-detector -->
+        <section id="wasted-render" class="api-section mb-12">
+          <div class="plugin-card glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">wasted-render-detector</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Detects unnecessary re-renders where props and state haven't changed.</p>
+            <pre><code class="language-typescript">import { createWastedRenderDetectorPlugin } from '@oxog/reactscope'
 
 const plugin = createWastedRenderDetectorPlugin({
   strictMode: false,      // Use strict equality for comparison
@@ -90,138 +319,23 @@ interface WastedRenderDetectorAPI {
   getWastedRenderCount(componentId: string): number
   getSuggestions(componentId: string): OptimizationSuggestion[]
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- lifecycle-tracker -->
-      <section id="lifecycle-tracker">
-        <h2 class="text-2xl font-semibold mb-4">lifecycle-tracker</h2>
-        <p class="text-zinc-400 mb-4">Tracks component mount/unmount events and calculates component lifetime.</p>
-        <pre><code class="language-typescript">import { createLifecycleTrackerPlugin } from '@oxog/reactscope'
-
-const plugin = createLifecycleTrackerPlugin({
-  trackMountTime: true,   // Track mount timestamp
-  trackUnmountTime: true, // Track unmount timestamp
-})
-
-// Plugin API
-interface LifecycleTrackerAPI {
-  getMountedComponents(): string[]
-  getComponentLifetime(componentId: string): number // ms
-  getUnmountedComponents(): ComponentLifecycle[]
-}</code></pre>
-      </section>
-
-      <!-- console-reporter -->
-      <section id="console-reporter">
-        <h2 class="text-2xl font-semibold mb-4">console-reporter</h2>
-        <p class="text-zinc-400 mb-4">Configurable console logging for profiling data.</p>
-        <pre><code class="language-typescript">import { createConsoleReporterPlugin } from '@oxog/reactscope'
-
-const plugin = createConsoleReporterPlugin({
-  logRenders: true,       // Log render events
-  logMounts: true,        // Log mount events
-  logUnmounts: true,      // Log unmount events
-  logWasted: true,        // Log wasted renders
-  logSlow: true,          // Log slow renders
-  slowThreshold: 16,      // Threshold for slow render
-  groupByComponent: true, // Group logs by component
-})
-
-// Plugin API
-interface ConsoleReporterAPI {
-  enable(): void
-  disable(): void
-  setOptions(options: Partial&lt;ConsoleReporterOptions&gt;): void
-}</code></pre>
-      </section>
-
-      <!-- json-exporter -->
-      <section id="json-exporter">
-        <h2 class="text-2xl font-semibold mb-4">json-exporter</h2>
-        <p class="text-zinc-400 mb-4">Exports metrics as JSON for CI/CD integration and external analysis.</p>
-        <pre><code class="language-typescript">import { createJsonExporterPlugin } from '@oxog/reactscope'
-
-const plugin = createJsonExporterPlugin({
-  includeTimeline: true,  // Include timeline events
-  includeTree: true,      // Include component tree
-  pretty: false,          // Pretty print JSON
-})
-
-// Plugin API
-interface JsonExporterAPI {
-  export(): string
-  exportToFile(filename: string): void
-  getSnapshot(): MetricsSnapshot
-}</code></pre>
-      </section>
-
-      <!-- timeline-recorder -->
-      <section id="timeline-recorder">
-        <h2 class="text-2xl font-semibold mb-4">timeline-recorder</h2>
-        <p class="text-zinc-400 mb-4">Records events for playback and analysis with timeline visualization.</p>
-        <pre><code class="language-typescript">import { createTimelineRecorderPlugin } from '@oxog/reactscope'
-
-const plugin = createTimelineRecorderPlugin({
-  maxEvents: 1000,        // Max events to keep
-  recordAll: true,        // Record all event types
-  eventTypes: ['render', 'mount', 'unmount'], // Specific types
-})
-
-// Plugin API
-interface TimelineRecorderAPI {
-  getEvents(filter?: EventFilter): TimelineEvent[]
-  getEventsByTimeRange(start: number, end: number): TimelineEvent[]
-  clear(): void
-  export(): TimelineEvent[]
-}</code></pre>
-      </section>
-
-      <!-- memory-tracker -->
-      <section id="memory-tracker">
-        <h2 class="text-2xl font-semibold mb-4">memory-tracker</h2>
-        <p class="text-zinc-400 mb-4">Monitors memory usage and detects potential memory leaks (Chrome only).</p>
-        <pre><code class="language-typescript">import { createMemoryTrackerPlugin } from '@oxog/reactscope'
-
-const plugin = createMemoryTrackerPlugin({
-  sampleInterval: 1000,   // ms between samples
-  maxSamples: 100,        // Max samples to keep
-  leakThreshold: 10,      // MB increase to consider leak
-})
-
-// Plugin API
-interface MemoryTrackerAPI {
-  getCurrentUsage(): MemoryUsage | null
-  getUsageHistory(): MemoryUsage[]
-  getLeakWarnings(): LeakWarning[]
-  forceGC(): void // If available
-}</code></pre>
-      </section>
-
-      <!-- network-correlator -->
-      <section id="network-correlator">
-        <h2 class="text-2xl font-semibold mb-4">network-correlator</h2>
-        <p class="text-zinc-400 mb-4">Correlates network requests with component renders to understand data flow.</p>
-        <pre><code class="language-typescript">import { createNetworkCorrelatorPlugin } from '@oxog/reactscope'
-
-const plugin = createNetworkCorrelatorPlugin({
-  trackFetch: true,       // Track fetch requests
-  trackXHR: true,         // Track XMLHttpRequest
-  urlFilter: /api/,       // Filter URLs to track
-})
-
-// Plugin API
-interface NetworkCorrelatorAPI {
-  getRequests(): NetworkRequest[]
-  getRequestsByComponent(componentId: string): NetworkRequest[]
-  getCorrelations(): RenderNetworkCorrelation[]
-}</code></pre>
-      </section>
-
-      <!-- dashboard-ui -->
-      <section id="dashboard-ui">
-        <h2 class="text-2xl font-semibold mb-4">dashboard-ui</h2>
-        <p class="text-zinc-400 mb-4">Visual overlay panel with Shadow DOM isolation for real-time monitoring.</p>
-        <pre><code class="language-typescript">import { createDashboardUIPlugin } from '@oxog/reactscope'
+        <!-- dashboard-ui -->
+        <section id="dashboard-ui" class="api-section mb-12">
+          <div class="plugin-card glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">dashboard-ui</h2>
+              <span class="px-3 py-1 text-xs font-medium bg-green-500/10 text-green-400 rounded-full border border-green-500/20">Visual</span>
+            </div>
+            <p class="text-zinc-400 mb-6">Visual overlay panel with Shadow DOM isolation for real-time monitoring.</p>
+            <pre><code class="language-typescript">import { createDashboardUIPlugin } from '@oxog/reactscope'
 
 const plugin = createDashboardUIPlugin({
   position: 'bottom-right', // Panel position
@@ -238,13 +352,59 @@ interface DashboardUIAPI {
   isVisible(): boolean
   setPosition(position: Position): void
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- Creating Custom Plugins -->
-      <section id="custom-plugins">
-        <h2 class="text-2xl font-semibold mb-8">Creating Custom Plugins</h2>
-        <p class="text-zinc-400 mb-4">You can create custom plugins using the <code class="bg-zinc-800 px-2 py-1 rounded">createPlugin</code> helper:</p>
-        <pre><code class="language-typescript">import { createPlugin, KernelEvent } from '@oxog/reactscope'
+        <!-- Other Plugins -->
+        <section class="mb-12">
+          <h2 class="text-2xl font-bold mb-6">Other Built-in Plugins</h2>
+          <div class="grid gap-4">
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="font-semibold text-lg mb-2 text-cyan-400">lifecycle-tracker</h3>
+              <p class="text-zinc-400 text-sm mb-3">Tracks component mount/unmount events and calculates component lifetime.</p>
+              <code class="text-xs text-zinc-500">createLifecycleTrackerPlugin(options)</code>
+            </div>
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="font-semibold text-lg mb-2 text-pink-400">console-reporter</h3>
+              <p class="text-zinc-400 text-sm mb-3">Configurable console logging for profiling data.</p>
+              <code class="text-xs text-zinc-500">createConsoleReporterPlugin(options)</code>
+            </div>
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="font-semibold text-lg mb-2 text-orange-400">json-exporter</h3>
+              <p class="text-zinc-400 text-sm mb-3">Exports metrics as JSON for CI/CD integration and external analysis.</p>
+              <code class="text-xs text-zinc-500">createJsonExporterPlugin(options)</code>
+            </div>
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="font-semibold text-lg mb-2 text-indigo-400">timeline-recorder</h3>
+              <p class="text-zinc-400 text-sm mb-3">Records events for playback and analysis with timeline visualization.</p>
+              <code class="text-xs text-zinc-500">createTimelineRecorderPlugin(options)</code>
+            </div>
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="font-semibold text-lg mb-2 text-red-400">memory-tracker</h3>
+              <p class="text-zinc-400 text-sm mb-3">Monitors memory usage and detects potential memory leaks (Chrome only).</p>
+              <code class="text-xs text-zinc-500">createMemoryTrackerPlugin(options)</code>
+            </div>
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="font-semibold text-lg mb-2 text-teal-400">network-correlator</h3>
+              <p class="text-zinc-400 text-sm mb-3">Correlates network requests with component renders to understand data flow.</p>
+              <code class="text-xs text-zinc-500">createNetworkCorrelatorPlugin(options)</code>
+            </div>
+          </div>
+        </section>
+
+        <!-- Creating Custom Plugins -->
+        <section id="custom-plugins" class="api-section">
+          <div class="glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">Creating Custom Plugins</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Create custom plugins using the <code class="bg-zinc-800/80 px-2 py-0.5 rounded text-blue-400 text-sm">createPlugin</code> helper:</p>
+            <pre class="mb-8"><code class="language-typescript">import { createPlugin, KernelEvent } from '@oxog/reactscope'
 
 const myPlugin = createPlugin({
   name: 'my-custom-plugin',
@@ -280,14 +440,11 @@ const myPlugin = createPlugin({
     customMethod: () => {
       return 'custom data'
     },
-    anotherMethod: (param: string) => {
-      // Do something
-    },
   },
 })</code></pre>
 
-        <h3 class="text-lg font-medium mt-8 mb-4">Plugin Interface</h3>
-        <pre><code class="language-typescript">interface Plugin {
+            <h3 class="text-lg font-semibold mb-4">Plugin Interface</h3>
+            <pre><code class="language-typescript">interface Plugin {
   readonly name: string
   readonly version: string
   readonly api?: Record&lt;string, unknown&gt;
@@ -304,8 +461,29 @@ const myPlugin = createPlugin({
     onError?(event: ErrorEvent): void
   }
 }</code></pre>
-      </section>
+          </div>
+        </section>
+      </main>
     </div>
-  </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span class="text-sm">⚡</span>
+          </div>
+          <span class="text-zinc-400 text-sm">ReactScope - Zero-dependency React profiler</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-zinc-400">
+          <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
+          <a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a>
+          <span>MIT License</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

@@ -3,80 +3,251 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hooks - ReactScope API</title>
+  <title>Hooks API - ReactScope</title>
+  <meta name="description" content="Complete reference for ReactScope hooks - useScope, useScopeMetrics, useScopeContext, and more.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
   <style>
-    body { background: #0a0a0a; color: #fafafa; }
-    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+    :root {
+      --bg-primary: #050505;
+      --accent: #3b82f6;
+    }
+    body {
+      background: var(--bg-primary);
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s ease;
+    }
+    .glow-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+    }
+    .sidebar-link {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .sidebar-link:hover {
+      color: #fff;
+      padding-left: 0.5rem;
+    }
+    .sidebar-link.active {
+      color: #60a5fa;
+    }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #3b82f6, #a78bfa);
+      border-radius: 2px;
+    }
+    pre[class*="language-"] {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      margin: 0;
+      padding: 1.25rem !important;
+    }
+    code[class*="language-"] {
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .api-section {
+      scroll-margin-top: 100px;
+    }
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .param-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: #a1a1aa;
+    }
+    .param-table td {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.875rem;
+    }
+    .param-table .param-name {
+      color: #60a5fa;
+      font-family: ui-monospace, monospace;
+    }
+    .param-table .param-type {
+      color: #a78bfa;
+      font-family: ui-monospace, monospace;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="../../../" class="flex items-center gap-2">
-        <span class="text-2xl">&#9889;</span>
-        <span class="font-bold text-xl">ReactScope</span>
-      </a>
-      <nav class="flex items-center gap-6">
-        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
-        <a href="./" class="text-white">API</a>
-        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
-      </nav>
+<body class="min-h-screen" x-data="{ mobileMenu: false }">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-white/5 sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="../../../" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+            <span class="text-lg">⚡</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight">ReactScope</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="../../" class="text-zinc-400 hover:text-white transition">Docs</a>
+          <a href="./" class="text-white font-medium">API</a>
+          <a href="../../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </nav>
+
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 text-zinc-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path x-show="mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div x-show="mobileMenu" x-transition class="md:hidden py-4 border-t border-white/5 mt-4">
+        <nav class="flex flex-col gap-4">
+          <a href="../../" class="text-zinc-400 hover:text-white transition">Docs</a>
+          <a href="./" class="text-white font-medium">API</a>
+          <a href="../../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-16">
-    <h1 class="text-4xl font-bold mb-8">Hooks Reference</h1>
-    <p class="text-zinc-400 mb-12">ReactScope provides several hooks for integrating performance profiling into your React components.</p>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
 
-    <div class="space-y-16">
-      <!-- useScope -->
-      <section id="useScope">
-        <h2 class="text-2xl font-semibold mb-4">useScope</h2>
-        <p class="text-zinc-400 mb-4">The main profiling hook for tracking component renders. Returns a handle with real-time metrics and methods.</p>
+      <!-- Sidebar -->
+      <aside class="hidden lg:block lg:col-span-3">
+        <nav class="sticky top-24 space-y-8">
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">API Reference</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="provider.html" class="sidebar-link text-zinc-400 text-sm">Provider</a></li>
+              <li><a href="hooks.html" class="sidebar-link active text-zinc-400 text-sm">Hooks</a></li>
+              <li><a href="components.html" class="sidebar-link text-zinc-400 text-sm">Components</a></li>
+              <li><a href="plugins.html" class="sidebar-link text-zinc-400 text-sm">Plugins</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">On This Page</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="#useScope" class="sidebar-link text-zinc-400 text-sm">useScope</a></li>
+              <li><a href="#useScopeMetrics" class="sidebar-link text-zinc-400 text-sm">useScopeMetrics</a></li>
+              <li><a href="#useScopeContext" class="sidebar-link text-zinc-400 text-sm">useScopeContext</a></li>
+              <li><a href="#useAllScopeMetrics" class="sidebar-link text-zinc-400 text-sm">useAllScopeMetrics</a></li>
+              <li><a href="#useScopeSummary" class="sidebar-link text-zinc-400 text-sm">useScopeSummary</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
-        <pre><code class="language-typescript">function useScope(name: string, options?: UseScopeOptions): ScopeHandle</code></pre>
+      <!-- Main Content -->
+      <main class="lg:col-span-9">
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-zinc-500 mb-8">
+          <a href="../../" class="hover:text-white transition">Docs</a>
+          <span class="mx-2">/</span>
+          <a href="./" class="hover:text-white transition">API</a>
+          <span class="mx-2">/</span>
+          <span class="text-zinc-300">Hooks</span>
+        </nav>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Parameters</h3>
-        <div class="bg-zinc-800/50 rounded-lg overflow-hidden">
-          <table class="w-full text-sm">
-            <thead class="bg-zinc-800">
-              <tr>
-                <th class="text-left px-4 py-2">Name</th>
-                <th class="text-left px-4 py-2">Type</th>
-                <th class="text-left px-4 py-2">Description</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-700">
-              <tr>
-                <td class="px-4 py-2 font-mono text-blue-400">name</td>
-                <td class="px-4 py-2 font-mono">string</td>
-                <td class="px-4 py-2 text-zinc-400">Component name for identification</td>
-              </tr>
-              <tr>
-                <td class="px-4 py-2 font-mono text-blue-400">options</td>
-                <td class="px-4 py-2 font-mono">UseScopeOptions</td>
-                <td class="px-4 py-2 text-zinc-400">Optional configuration</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Hero -->
+        <div class="mb-12">
+          <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+            <span class="gradient-text">Hooks</span>
+          </h1>
+          <p class="text-xl text-zinc-400 max-w-2xl">
+            ReactScope provides several hooks for integrating performance profiling into your React components.
+          </p>
         </div>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Options</h3>
-        <pre><code class="language-typescript">interface UseScopeOptions {
+        <!-- useScope -->
+        <section id="useScope" class="api-section mb-16">
+          <div class="glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">useScope</h2>
+              <span class="px-3 py-1 text-xs font-medium bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">Primary</span>
+            </div>
+            <p class="text-zinc-400 mb-6">The main profiling hook for tracking component renders. Returns a handle with real-time metrics and methods.</p>
+
+            <h3 class="text-lg font-semibold mb-3">Signature</h3>
+            <pre class="mb-6"><code class="language-typescript">function useScope(name: string, options?: UseScopeOptions): ScopeHandle</code></pre>
+
+            <h3 class="text-lg font-semibold mb-3">Parameters</h3>
+            <div class="rounded-xl overflow-hidden border border-white/5 mb-6">
+              <table class="param-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="param-name">name</td>
+                    <td class="param-type">string</td>
+                    <td class="text-zinc-400">Component name for identification</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">options</td>
+                    <td class="param-type">UseScopeOptions</td>
+                    <td class="text-zinc-400">Optional configuration</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3 class="text-lg font-semibold mb-3">Options</h3>
+            <pre class="mb-6"><code class="language-typescript">interface UseScopeOptions {
   trackProps?: boolean     // Track prop changes (default: true)
   trackState?: boolean     // Track state changes (default: false)
   sampleRate?: number      // Sampling rate 0-1 (default: 1)
   onRender?: (metrics: ComponentMetrics) => void
 }</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Return Value</h3>
-        <pre><code class="language-typescript">interface ScopeHandle {
+            <h3 class="text-lg font-semibold mb-3">Return Value</h3>
+            <pre class="mb-6"><code class="language-typescript">interface ScopeHandle {
   readonly componentId: string
   readonly renderCount: number
   readonly lastRenderTime: number      // ms
@@ -88,8 +259,8 @@
   trackPropsChange(changes: PropsDiff[]): void
 }</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
-        <pre><code class="language-tsx">import { useScope } from '@oxog/reactscope'
+            <h3 class="text-lg font-semibold mb-3">Example</h3>
+            <pre><code class="language-tsx">import { useScope } from '@oxog/reactscope'
 
 function UserProfile({ user }) {
   const scope = useScope('UserProfile', {
@@ -109,18 +280,27 @@ function UserProfile({ user }) {
     &lt;/div&gt;
   )
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- useScopeMetrics -->
-      <section id="useScopeMetrics">
-        <h2 class="text-2xl font-semibold mb-4">useScopeMetrics</h2>
-        <p class="text-zinc-400 mb-4">Read-only hook for accessing metrics of a specific component by ID. Useful for building monitoring dashboards.</p>
+        <!-- useScopeMetrics -->
+        <section id="useScopeMetrics" class="api-section mb-16">
+          <div class="glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">useScopeMetrics</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Read-only hook for accessing metrics of a specific component by ID. Useful for building monitoring dashboards.</p>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
-        <pre><code class="language-typescript">function useScopeMetrics(componentId: string): ComponentMetrics | undefined</code></pre>
+            <h3 class="text-lg font-semibold mb-3">Signature</h3>
+            <pre class="mb-6"><code class="language-typescript">function useScopeMetrics(componentId: string): ComponentMetrics | undefined</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Return Value</h3>
-        <pre><code class="language-typescript">interface ComponentMetrics {
+            <h3 class="text-lg font-semibold mb-3">Return Value</h3>
+            <pre class="mb-6"><code class="language-typescript">interface ComponentMetrics {
   componentId: string
   componentName: string
   renderCount: number
@@ -136,8 +316,8 @@ function UserProfile({ user }) {
   propsHistory: PropsSnapshot[]
 }</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
-        <pre><code class="language-tsx">import { useScopeMetrics } from '@oxog/reactscope'
+            <h3 class="text-lg font-semibold mb-3">Example</h3>
+            <pre><code class="language-tsx">import { useScopeMetrics } from '@oxog/reactscope'
 
 function ComponentMonitor({ targetId }) {
   const metrics = useScopeMetrics(targetId)
@@ -157,18 +337,28 @@ function ComponentMonitor({ targetId }) {
     &lt;/div&gt;
   )
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- useScopeContext -->
-      <section id="useScopeContext">
-        <h2 class="text-2xl font-semibold mb-4">useScopeContext</h2>
-        <p class="text-zinc-400 mb-4">Access the kernel instance directly for advanced use cases like registering plugins or accessing metrics store.</p>
+        <!-- useScopeContext -->
+        <section id="useScopeContext" class="api-section mb-16">
+          <div class="glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">useScopeContext</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Access the kernel instance directly for advanced use cases like registering plugins or accessing metrics store.</p>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
-        <pre><code class="language-typescript">function useScopeContext(): Kernel</code></pre>
+            <h3 class="text-lg font-semibold mb-3">Signature</h3>
+            <pre class="mb-6"><code class="language-typescript">function useScopeContext(): Kernel</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
-        <pre><code class="language-tsx">import { useScopeContext } from '@oxog/reactscope'
+            <h3 class="text-lg font-semibold mb-3">Example</h3>
+            <pre><code class="language-tsx">import { useScopeContext } from '@oxog/reactscope'
 
 function AdvancedMetrics() {
   const kernel = useScopeContext()
@@ -192,18 +382,27 @@ function AdvancedMetrics() {
     &lt;/div&gt;
   )
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- useAllScopeMetrics -->
-      <section id="useAllScopeMetrics">
-        <h2 class="text-2xl font-semibold mb-4">useAllScopeMetrics</h2>
-        <p class="text-zinc-400 mb-4">Get metrics for all tracked components. Returns a Map for efficient lookups.</p>
+        <!-- useAllScopeMetrics -->
+        <section id="useAllScopeMetrics" class="api-section mb-16">
+          <div class="glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">useAllScopeMetrics</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Get metrics for all tracked components. Returns a Map for efficient lookups.</p>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
-        <pre><code class="language-typescript">function useAllScopeMetrics(): Map&lt;string, ComponentMetrics&gt;</code></pre>
+            <h3 class="text-lg font-semibold mb-3">Signature</h3>
+            <pre class="mb-6"><code class="language-typescript">function useAllScopeMetrics(): Map&lt;string, ComponentMetrics&gt;</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
-        <pre><code class="language-tsx">import { useAllScopeMetrics } from '@oxog/reactscope'
+            <h3 class="text-lg font-semibold mb-3">Example</h3>
+            <pre><code class="language-tsx">import { useAllScopeMetrics } from '@oxog/reactscope'
 
 function MetricsDashboard() {
   const allMetrics = useAllScopeMetrics()
@@ -225,15 +424,24 @@ function MetricsDashboard() {
     &lt;/div&gt;
   )
 }</code></pre>
-      </section>
+          </div>
+        </section>
 
-      <!-- useScopeSummary -->
-      <section id="useScopeSummary">
-        <h2 class="text-2xl font-semibold mb-4">useScopeSummary</h2>
-        <p class="text-zinc-400 mb-4">Get summary statistics across all tracked components. Perfect for overview dashboards.</p>
+        <!-- useScopeSummary -->
+        <section id="useScopeSummary" class="api-section">
+          <div class="glow-card rounded-2xl p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold">useScopeSummary</h2>
+            </div>
+            <p class="text-zinc-400 mb-6">Get summary statistics across all tracked components. Perfect for overview dashboards.</p>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Signature</h3>
-        <pre><code class="language-typescript">function useScopeSummary(): ScopeSummary
+            <h3 class="text-lg font-semibold mb-3">Signature</h3>
+            <pre class="mb-6"><code class="language-typescript">function useScopeSummary(): ScopeSummary
 
 interface ScopeSummary {
   totalComponents: number
@@ -242,8 +450,8 @@ interface ScopeSummary {
   averageRenderTime: number
 }</code></pre>
 
-        <h3 class="text-lg font-medium mt-6 mb-3">Example</h3>
-        <pre><code class="language-tsx">import { useScopeSummary } from '@oxog/reactscope'
+            <h3 class="text-lg font-semibold mb-3">Example</h3>
+            <pre><code class="language-tsx">import { useScopeSummary } from '@oxog/reactscope'
 
 function AppOverview() {
   const summary = useScopeSummary()
@@ -273,8 +481,29 @@ function AppOverview() {
     &lt;/div&gt;
   )
 }</code></pre>
-      </section>
+          </div>
+        </section>
+      </main>
     </div>
-  </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span class="text-sm">⚡</span>
+          </div>
+          <span class="text-zinc-400 text-sm">ReactScope - Zero-dependency React profiler</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-zinc-400">
+          <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
+          <a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a>
+          <span>MIT License</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
