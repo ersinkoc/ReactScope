@@ -89,7 +89,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen" x-data="{ mobileMenu: false }">
+<body class="min-h-screen" x-data="{ mobileMenu: false, searchOpen: false }" @keydown.window.escape="searchOpen = false" @keydown.window.meta.k.prevent="searchOpen = true" @keydown.window.ctrl.k.prevent="searchOpen = true">
   <!-- Background Effects -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden">
     <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
@@ -108,10 +108,15 @@
         </a>
 
         <!-- Desktop Nav -->
-        <nav class="hidden md:flex items-center gap-8">
+        <nav class="hidden md:flex items-center gap-6">
           <a href="./" class="text-white font-medium">Docs</a>
           <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
           <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <button @click="searchOpen = true" class="flex items-center gap-2 px-3 py-1.5 text-zinc-400 hover:text-white transition rounded-lg bg-white/5 hover:bg-white/10 border border-white/10">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span class="text-sm">Search</span>
+            <kbd class="hidden lg:inline-flex px-1.5 py-0.5 text-xs text-zinc-500 bg-zinc-800 rounded border border-white/10">⌘K</kbd>
+          </button>
           <a href="https://github.com/ersinkoc/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
             GitHub
@@ -338,6 +343,65 @@
     </div>
   </div>
 
+  <!-- Search Modal -->
+  <div x-show="searchOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-[100] overflow-y-auto" @click="searchOpen = false">
+    <div class="min-h-screen px-4 py-20 flex items-start justify-center">
+      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+      <div @click.stop class="relative w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden" x-data="searchDocs()">
+        <div class="flex items-center gap-4 p-4 border-b border-white/10">
+          <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input x-model="query" @input="search()" type="text" placeholder="Search documentation..." class="flex-1 bg-transparent text-white placeholder-zinc-500 outline-none text-lg" x-ref="searchInput" x-init="$watch('$root.searchOpen', v => v && $nextTick(() => $refs.searchInput.focus()))">
+          <kbd class="px-2 py-1 text-xs text-zinc-500 bg-zinc-800 rounded border border-white/10">ESC</kbd>
+        </div>
+        <div class="max-h-96 overflow-y-auto p-2">
+          <template x-if="query.length === 0">
+            <div class="p-6 text-center">
+              <div class="text-zinc-500 mb-4">Quick Links</div>
+              <div class="grid grid-cols-2 gap-2">
+                <a href="getting-started.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition"><svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span class="text-zinc-300">Getting Started</span></a>
+                <a href="api/hooks.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition"><svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg><span class="text-zinc-300">Hooks</span></a>
+                <a href="api/provider.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition"><svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/></svg><span class="text-zinc-300">Provider</span></a>
+                <a href="api/plugins.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition"><svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg><span class="text-zinc-300">Plugins</span></a>
+              </div>
+            </div>
+          </template>
+          <template x-if="query.length > 0 && results.length === 0">
+            <div class="p-8 text-center text-zinc-500">No results found</div>
+          </template>
+          <template x-for="r in results" :key="r.url">
+            <a :href="r.url" class="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" :class="r.iconBg"><span x-html="r.icon"></span></div>
+              <div class="flex-1 min-w-0"><div class="font-medium text-white" x-text="r.title"></div><div class="text-sm text-zinc-400 truncate" x-text="r.desc"></div></div>
+            </a>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function searchDocs() {
+      const index = [
+        { title: 'Installation', desc: 'Install ReactScope via npm, yarn, or pnpm', url: 'getting-started.html', keywords: ['install', 'npm', 'yarn', 'setup'], iconBg: 'bg-blue-500/20', icon: '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>' },
+        { title: 'ReactScopeProvider', desc: 'Root provider component', url: 'api/provider.html', keywords: ['provider', 'context', 'wrapper'], iconBg: 'bg-green-500/20', icon: '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/></svg>' },
+        { title: 'useScope Hook', desc: 'Profile individual components', url: 'api/hooks.html', keywords: ['hook', 'useScope', 'profiler', 'metrics'], iconBg: 'bg-purple-500/20', icon: '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>' },
+        { title: 'Plugins', desc: 'Built-in and custom plugins', url: 'api/plugins.html', keywords: ['plugin', 'extend', 'custom'], iconBg: 'bg-amber-500/20', icon: '<svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>' },
+        { title: 'Components', desc: 'Dashboard and UI components', url: 'api/components.html', keywords: ['dashboard', 'ui', 'component'], iconBg: 'bg-cyan-500/20', icon: '<svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/></svg>' },
+        { title: 'Basic Example', desc: 'Simple usage example', url: 'examples/basic.html', keywords: ['basic', 'example', 'start'], iconBg: 'bg-pink-500/20', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+        { title: 'Custom Plugin', desc: 'Create your own plugin', url: 'examples/custom-plugin.html', keywords: ['custom', 'plugin', 'create'], iconBg: 'bg-pink-500/20', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+        { title: 'Production', desc: 'Best practices for production', url: 'examples/production.html', keywords: ['production', 'best', 'practices'], iconBg: 'bg-pink-500/20', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+      ];
+      return {
+        query: '', results: [],
+        search() {
+          if (!this.query) { this.results = []; return; }
+          const q = this.query.toLowerCase();
+          this.results = index.filter(i => i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q) || i.keywords.some(k => k.includes(q))).slice(0, 6);
+        }
+      };
+    }
+  </script>
+
   <!-- Footer -->
   <footer class="border-t border-white/5 mt-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
@@ -351,7 +415,7 @@
         <div class="flex items-center gap-6 text-sm text-zinc-400">
           <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
           <a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a>
-          <span>MIT License</span>
+          <span>© 2025 MIT License</span>
         </div>
       </div>
     </div>
