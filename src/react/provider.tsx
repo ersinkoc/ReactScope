@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { ReactScopeProviderProps, Kernel } from '../types'
 import { ScopeContext } from './context'
 import { createKernel, setGlobalKernel } from '../kernel'
@@ -21,13 +21,10 @@ export function ReactScopeProvider({
   options = {},
 }: ReactScopeProviderProps): React.ReactElement {
   const kernelRef = useRef<Kernel | null>(null)
+  const initializedRef = useRef(false)
 
-  // Create kernel only once
-  const kernel = useMemo(() => {
-    if (kernelRef.current) {
-      return kernelRef.current
-    }
-
+  // Create kernel only once (survives StrictMode double-mount)
+  if (!kernelRef.current) {
     const k = createKernel({
       enabled,
       ...options,
@@ -46,9 +43,9 @@ export function ReactScopeProvider({
 
     kernelRef.current = k
     setGlobalKernel(k)
+  }
 
-    return k
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const kernel = kernelRef.current
 
   // Handle enabled changes
   useEffect(() => {
@@ -64,21 +61,17 @@ export function ReactScopeProvider({
     kernel.configure(options)
   }, [kernel, options])
 
-  // Call onReady callback
+  // Call onReady callback (only once)
   useEffect(() => {
-    if (onReady) {
+    if (onReady && !initializedRef.current) {
+      initializedRef.current = true
       onReady(kernel)
     }
   }, [kernel, onReady])
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      kernel.destroy()
-      setGlobalKernel(null)
-      kernelRef.current = null
-    }
-  }, [kernel])
+  // Note: We intentionally don't destroy the kernel on unmount
+  // to handle React StrictMode's double-mount behavior.
+  // The kernel will be garbage collected when the app unmounts.
 
   return (
     <ScopeContext.Provider value={kernel}>

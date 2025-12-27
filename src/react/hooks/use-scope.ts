@@ -1,5 +1,5 @@
-import { useRef, useEffect, useCallback, useMemo } from 'react'
-import type { UseScopeOptions, ScopeHandle, PropsDiff, RenderEvent, MountEvent, UnmountEvent } from '../../types'
+import { useRef, useEffect, useCallback, useState } from 'react'
+import type { UseScopeOptions, ScopeHandle, PropsDiff, RenderEvent, MountEvent, UnmountEvent, ComponentMetrics } from '../../types'
 import { useScopeContextSafe } from '../context'
 import { uid } from '../../utils/uid'
 import { createDefaultMetrics } from '../../kernel/metrics-store'
@@ -13,6 +13,8 @@ export function useScope(name: string, options: UseScopeOptions = {}): ScopeHand
   const componentIdRef = useRef<string | null>(null)
   const renderCountRef = useRef(0)
   const mountTimeRef = useRef<number | null>(null)
+  const isMetricsUpdateRef = useRef(false)
+  const lastTrackedRenderRef = useRef(0)
 
   // Generate component ID on first render
   if (!componentIdRef.current) {
@@ -21,7 +23,10 @@ export function useScope(name: string, options: UseScopeOptions = {}): ScopeHand
 
   const componentId = componentIdRef.current
 
-  // Initialize metrics on mount
+  // State to trigger re-renders when metrics update
+  const [metrics, setMetrics] = useState<ComponentMetrics | null>(null)
+
+  // Initialize metrics on mount and subscribe to updates
   useEffect(() => {
     if (!kernel) return
 
@@ -34,17 +39,31 @@ export function useScope(name: string, options: UseScopeOptions = {}): ScopeHand
       kernel.getMetrics().set(componentId, defaultMetrics)
     }
 
+    // Set initial metrics (mark as metrics update to skip tracking)
+    isMetricsUpdateRef.current = true
+    setMetrics(kernel.getMetrics().get(componentId) ?? null)
+
+    // Subscribe to metrics updates for this component
+    const unsubscribe = kernel.on('metrics-update', (event) => {
+      if (event.componentId === componentId) {
+        // Mark that next render is due to metrics update
+        isMetricsUpdateRef.current = true
+        setMetrics(event.metrics)
+      }
+    })
+
     // Emit mount event
     const mountEvent: MountEvent = {
       type: 'mount',
       timestamp: now,
       componentId,
       componentName: name,
-      parentId: null, // Parent tracking would require additional context
+      parentId: null,
     }
     kernel.emit(mountEvent)
 
     return () => {
+      unsubscribe()
       // Emit unmount event
       const unmountEvent: UnmountEvent = {
         type: 'unmount',
@@ -75,9 +94,9 @@ export function useScope(name: string, options: UseScopeOptions = {}): ScopeHand
       kernel.emit(renderEvent)
 
       if (options.onRender) {
-        const metrics = kernel.getMetrics().get(componentId)
-        if (metrics) {
-          options.onRender(metrics)
+        const currentMetrics = kernel.getMetrics().get(componentId)
+        if (currentMetrics) {
+          options.onRender(currentMetrics)
         }
       }
     },
@@ -100,53 +119,61 @@ export function useScope(name: string, options: UseScopeOptions = {}): ScopeHand
     [kernel, componentId, name]
   )
 
-  // Track render on each render
+  // Track render on each render (but skip metrics-triggered re-renders)
   useEffect(() => {
+    // Skip tracking if this render was triggered by a metrics update
+    if (isMetricsUpdateRef.current) {
+      isMetricsUpdateRef.current = false
+      return
+    }
+
+    const currentRender = ++lastTrackedRenderRef.current
     const startTime = performance.now()
     const phase = renderCountRef.current === 0 ? 'mount' : 'update'
 
     // Use requestIdleCallback to measure after paint
     if (typeof requestIdleCallback !== 'undefined') {
       requestIdleCallback(() => {
-        const duration = performance.now() - startTime
-        trackRender(duration, phase)
+        // Only track if this is still the latest render
+        if (currentRender === lastTrackedRenderRef.current) {
+          const duration = performance.now() - startTime
+          trackRender(duration, phase)
+        }
       })
     } else {
       // Fallback for browsers without requestIdleCallback
       setTimeout(() => {
-        const duration = performance.now() - startTime
-        trackRender(duration, phase)
+        if (currentRender === lastTrackedRenderRef.current) {
+          const duration = performance.now() - startTime
+          trackRender(duration, phase)
+        }
       }, 0)
     }
   })
 
-  // Create the handle
-  const handle = useMemo<ScopeHandle>(() => {
-    const getMetrics = () => kernel?.getMetrics().get(componentId)
-
-    return {
-      get componentId() {
-        return componentId
-      },
-      get renderCount() {
-        return getMetrics()?.renderCount ?? 0
-      },
-      get lastRenderTime() {
-        return getMetrics()?.lastRenderTime ?? 0
-      },
-      get averageRenderTime() {
-        return getMetrics()?.averageRenderTime ?? 0
-      },
-      get wastedRenders() {
-        return getMetrics()?.wastedRenderCount ?? 0
-      },
-      get isTracking() {
-        return kernel !== null && kernel.isEnabled()
-      },
-      trackRender,
-      trackPropsChange,
-    }
-  }, [kernel, componentId, trackRender, trackPropsChange])
+  // Create the handle with current metrics
+  const handle: ScopeHandle = {
+    get componentId() {
+      return componentId
+    },
+    get renderCount() {
+      return metrics?.renderCount ?? 0
+    },
+    get lastRenderTime() {
+      return metrics?.lastRenderTime ?? 0
+    },
+    get averageRenderTime() {
+      return metrics?.averageRenderTime ?? 0
+    },
+    get wastedRenders() {
+      return metrics?.wastedRenderCount ?? 0
+    },
+    get isTracking() {
+      return kernel !== null && kernel.isEnabled()
+    },
+    trackRender,
+    trackPropsChange,
+  }
 
   return handle
 }
