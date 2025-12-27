@@ -99,6 +99,7 @@ export function PlaygroundPage() {
   const [currentExample, setCurrentExample] = useState(examples[0])
   const [code, setCode] = useState(examples[0].code)
   const [isRunning, setIsRunning] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [metrics, setMetrics] = useState({
     renderCount: 0,
     avgRenderTime: 0,
@@ -111,6 +112,7 @@ export function PlaygroundPage() {
   const loadExample = (example: typeof examples[0]) => {
     setCurrentExample(example)
     setCode(example.code)
+    setDropdownOpen(false)
   }
 
   const runCode = useCallback(() => {
@@ -165,38 +167,47 @@ export function PlaygroundPage() {
   return (
     <div className="pt-16 min-h-screen flex flex-col">
       {/* Toolbar */}
-      <div className="border-b border-white/5 bg-dark-900/80 backdrop-blur-xl">
+      <div className="relative z-60 border-b border-white/5 bg-dark-900/80 backdrop-blur-xl">
         <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-zinc-400">Playground</span>
 
               {/* Example Selector */}
-              <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition text-sm">
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition text-sm"
+                >
                   <span>{currentExample.icon}</span>
                   <span>{currentExample.name}</span>
-                  <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 text-zinc-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-64 py-2 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  {examples.map((example) => (
-                    <button
-                      key={example.id}
-                      onClick={() => loadExample(example)}
-                      className={`w-full px-4 py-2 text-left hover:bg-white/5 transition flex items-center gap-3 ${
-                        currentExample.id === example.id ? 'text-blue-400' : 'text-zinc-300'
-                      }`}
-                    >
-                      <span className="text-lg">{example.icon}</span>
-                      <div>
-                        <div className="font-medium text-sm">{example.name}</div>
-                        <div className="text-xs text-zinc-500">{example.description}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {dropdownOpen && (
+                  <>
+                    {/* Backdrop to close dropdown when clicking outside */}
+                    <div className="fixed inset-0 z-50" onClick={() => setDropdownOpen(false)} />
+                    <div className="absolute top-full left-0 mt-2 w-64 py-2 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-100">
+                      {examples.map((example) => (
+                        <button
+                          key={example.id}
+                          onClick={() => loadExample(example)}
+                          className={`w-full px-4 py-2 text-left hover:bg-white/5 transition flex items-center gap-3 ${
+                            currentExample.id === example.id ? 'text-blue-400' : 'text-zinc-300'
+                          }`}
+                        >
+                          <span className="text-lg">{example.icon}</span>
+                          <div>
+                            <div className="font-medium text-sm">{example.name}</div>
+                            <div className="text-xs text-zinc-500">{example.description}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
