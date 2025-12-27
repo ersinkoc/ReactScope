@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground | ReactScope - Interactive React Profiler</title>
+  <meta name="description" content="Try ReactScope in your browser. Write React code and see real-time performance metrics, render tracking, and component profiling.">
+  <meta name="keywords" content="ReactScope, React, playground, profiler, performance, interactive, live coding">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ReactScope Playground">
+  <meta property="og:description" content="Interactive playground to experiment with ReactScope's performance profiling capabilities.">
+  <meta property="og:type" content="website">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Monaco Editor -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.min.css">
+
+  <style>
+    :root {
+      --bg-primary: #050505;
+      --bg-secondary: #0a0a0a;
+      --bg-tertiary: #111111;
+    }
+    body {
+      background: var(--bg-primary);
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow-button {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+    }
+    .glow-button:hover {
+      box-shadow: 0 0 50px rgba(59, 130, 246, 0.6);
+      transform: translateY(-2px);
+    }
+    .editor-container {
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .preview-container {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .metrics-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .metrics-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .metric-value {
+      font-variant-numeric: tabular-nums;
+    }
+    @keyframes pulse-metric {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .metric-pulse {
+      animation: pulse-metric 0.3s ease-out;
+    }
+    @keyframes render-flash {
+      0% { background-color: rgba(59, 130, 246, 0.3); }
+      100% { background-color: transparent; }
+    }
+    .render-flash {
+      animation: render-flash 0.5s ease-out;
+    }
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .event-item {
+      animation: slide-in 0.3s ease-out;
+    }
+    .tab-active {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+    .resize-handle {
+      cursor: col-resize;
+      background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    }
+    .resize-handle:hover {
+      background: linear-gradient(180deg, transparent 0%, rgba(59, 130, 246, 0.3) 50%, transparent 100%);
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    /* Monaco editor customization */
+    .monaco-editor .margin {
+      background: #1e1e1e !important;
+    }
+    /* Render timeline */
+    .timeline-bar {
+      height: 4px;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+    /* Component tree styles */
+    .tree-node {
+      transition: all 0.2s ease;
+    }
+    .tree-node:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    .tree-node.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-left: 2px solid #3b82f6;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col" x-data="playground()">
+  <!-- Header -->
+  <header class="border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <a href="./" class="flex items-center gap-3 group">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+              <span class="text-sm">⚡</span>
+            </div>
+            <span class="font-bold text-lg tracking-tight">ReactScope</span>
+          </a>
+          <span class="text-zinc-600">|</span>
+          <span class="text-sm font-medium text-zinc-400">Playground</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Example Selector -->
+          <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition text-sm">
+              <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <span x-text="currentExample.name">Examples</span>
+              <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div x-show="open" @click.away="open = false" x-transition
+                 class="absolute right-0 mt-2 w-64 py-2 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-50">
+              <template x-for="example in examples" :key="example.id">
+                <button @click="loadExample(example); open = false"
+                        class="w-full px-4 py-2 text-left hover:bg-white/5 transition flex items-center gap-3"
+                        :class="currentExample.id === example.id ? 'text-blue-400' : 'text-zinc-300'">
+                  <span class="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                        :class="example.iconBg" x-text="example.icon"></span>
+                  <div>
+                    <div class="font-medium text-sm" x-text="example.name"></div>
+                    <div class="text-xs text-zinc-500" x-text="example.description"></div>
+                  </div>
+                </button>
+              </template>
+            </div>
+          </div>
+
+          <!-- Run Button -->
+          <button @click="runCode()" class="glow-button px-4 py-1.5 rounded-lg font-medium text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Run
+            <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-xs bg-white/10 rounded">⌘R</kbd>
+          </button>
+
+          <!-- Reset Button -->
+          <button @click="resetPlayground()" class="px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition text-sm text-zinc-400 hover:text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+
+          <div class="w-px h-6 bg-white/10"></div>
+
+          <nav class="hidden md:flex items-center gap-6">
+            <a href="./docs/" class="text-zinc-400 hover:text-white transition text-sm">Docs</a>
+            <a href="https://github.com/nicholasodonnell/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition text-sm">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              GitHub
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    <!-- Left Panel: Code Editor -->
+    <div class="flex-1 flex flex-col min-w-0 border-r border-white/5" :style="`width: ${editorWidth}%`">
+      <!-- Editor Tabs -->
+      <div class="flex items-center gap-1 px-4 py-2 border-b border-white/5 bg-zinc-900/50">
+        <template x-for="tab in tabs" :key="tab.id">
+          <button @click="activeTab = tab.id"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition border border-transparent"
+                  :class="activeTab === tab.id ? 'tab-active border-blue-500/30 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'">
+            <span x-text="tab.name"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Monaco Editor -->
+      <div class="flex-1 relative">
+        <div id="editor" class="absolute inset-0"></div>
+      </div>
+
+      <!-- Editor Status Bar -->
+      <div class="px-4 py-2 border-t border-white/5 bg-zinc-900/50 flex items-center justify-between text-xs text-zinc-500">
+        <div class="flex items-center gap-4">
+          <span>TypeScript React</span>
+          <span>UTF-8</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span x-text="`Ln ${cursorLine}, Col ${cursorColumn}`"></span>
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full" :class="isRunning ? 'bg-green-500 animate-pulse' : 'bg-zinc-600'"></span>
+            <span x-text="isRunning ? 'Running' : 'Ready'"></span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resize Handle -->
+    <div class="hidden lg:block w-1 resize-handle hover:bg-blue-500/20 transition cursor-col-resize"
+         @mousedown="startResize($event)"></div>
+
+    <!-- Right Panel: Preview & Metrics -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden" :style="`width: ${100 - editorWidth}%`">
+      <!-- Panel Tabs -->
+      <div class="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-zinc-900/50">
+        <div class="flex items-center gap-1">
+          <button @click="rightPanel = 'preview'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition border border-transparent"
+                  :class="rightPanel === 'preview' ? 'tab-active border-blue-500/30 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'">
+            Preview
+          </button>
+          <button @click="rightPanel = 'metrics'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition border border-transparent"
+                  :class="rightPanel === 'metrics' ? 'tab-active border-blue-500/30 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'">
+            Metrics
+          </button>
+          <button @click="rightPanel = 'tree'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition border border-transparent"
+                  :class="rightPanel === 'tree' ? 'tab-active border-blue-500/30 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'">
+            Component Tree
+          </button>
+          <button @click="rightPanel = 'timeline'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition border border-transparent"
+                  :class="rightPanel === 'timeline' ? 'tab-active border-blue-500/30 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'">
+            Timeline
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button @click="clearEvents()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition" title="Clear events">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Panel -->
+      <div x-show="rightPanel === 'preview'" class="flex-1 overflow-auto p-4">
+        <div class="preview-container h-full p-6">
+          <div class="bg-zinc-900/50 rounded-lg p-4 border border-white/5 min-h-[200px]" id="preview-output">
+            <!-- Preview content rendered here -->
+            <div x-show="!hasOutput" class="flex flex-col items-center justify-center h-full text-zinc-500 py-12">
+              <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <p class="text-sm">Click "Run" to see your component</p>
+              <p class="text-xs mt-1 text-zinc-600">or press ⌘R</p>
+            </div>
+            <div x-show="hasOutput" x-html="previewOutput"></div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button @click="simulateRender()" class="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition text-sm font-medium">
+              Trigger Render
+            </button>
+            <button @click="simulatePropsChange()" class="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition text-sm font-medium">
+              Change Props
+            </button>
+            <button @click="simulateWastedRender()" class="px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition text-sm font-medium">
+              Wasted Render
+            </button>
+            <button @click="simulateMount()" class="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition text-sm font-medium">
+              Mount
+            </button>
+            <button @click="simulateUnmount()" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-medium">
+              Unmount
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Panel -->
+      <div x-show="rightPanel === 'metrics'" class="flex-1 overflow-auto p-4">
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
+          <div class="metrics-card p-4" :class="metrics.renderCount > 0 && 'metric-pulse'">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </div>
+              <span class="text-xs text-zinc-500 uppercase tracking-wider">Renders</span>
+            </div>
+            <div class="text-3xl font-bold metric-value" x-text="metrics.renderCount"></div>
+          </div>
+
+          <div class="metrics-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <span class="text-xs text-zinc-500 uppercase tracking-wider">Avg Time</span>
+            </div>
+            <div class="text-3xl font-bold metric-value">
+              <span x-text="metrics.avgRenderTime.toFixed(2)"></span>
+              <span class="text-sm text-zinc-500">ms</span>
+            </div>
+          </div>
+
+          <div class="metrics-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <span class="text-xs text-zinc-500 uppercase tracking-wider">Wasted</span>
+            </div>
+            <div class="text-3xl font-bold metric-value" :class="metrics.wastedRenders > 0 ? 'text-amber-400' : ''" x-text="metrics.wastedRenders"></div>
+          </div>
+
+          <div class="metrics-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                </svg>
+              </div>
+              <span class="text-xs text-zinc-500 uppercase tracking-wider">Props Changes</span>
+            </div>
+            <div class="text-3xl font-bold metric-value" x-text="metrics.propsChanges"></div>
+          </div>
+        </div>
+
+        <!-- Render Time Chart -->
+        <div class="metrics-card p-4 mb-6">
+          <h3 class="text-sm font-medium mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Render Times
+          </h3>
+          <div class="h-32 flex items-end gap-1">
+            <template x-for="(time, index) in renderTimes.slice(-20)" :key="index">
+              <div class="flex-1 rounded-t transition-all duration-300"
+                   :style="`height: ${Math.min(100, (time / maxRenderTime) * 100)}%`"
+                   :class="time > 16 ? 'bg-gradient-to-t from-red-600 to-red-400' : time > 8 ? 'bg-gradient-to-t from-amber-600 to-amber-400' : 'bg-gradient-to-t from-blue-600 to-blue-400'"
+                   :title="`${time.toFixed(2)}ms`">
+              </div>
+            </template>
+            <template x-if="renderTimes.length === 0">
+              <div class="w-full h-full flex items-center justify-center text-zinc-600 text-sm">
+                No render data yet
+              </div>
+            </template>
+          </div>
+          <div class="flex justify-between mt-2 text-xs text-zinc-500">
+            <span>0ms</span>
+            <span x-text="`${maxRenderTime.toFixed(0)}ms`"></span>
+          </div>
+        </div>
+
+        <!-- Events Log -->
+        <div class="metrics-card p-4">
+          <h3 class="text-sm font-medium mb-4 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              Event Log
+            </span>
+            <span class="text-xs text-zinc-500" x-text="`${events.length} events`"></span>
+          </h3>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            <template x-for="(event, index) in events.slice().reverse().slice(0, 50)" :key="index">
+              <div class="event-item flex items-center gap-3 p-2 rounded-lg bg-white/2 hover:bg-white/5 transition">
+                <div class="w-6 h-6 rounded flex items-center justify-center text-xs"
+                     :class="{
+                       'bg-blue-500/20 text-blue-400': event.type === 'render',
+                       'bg-green-500/20 text-green-400': event.type === 'mount',
+                       'bg-red-500/20 text-red-400': event.type === 'unmount',
+                       'bg-purple-500/20 text-purple-400': event.type === 'props-change',
+                       'bg-amber-500/20 text-amber-400': event.type === 'wasted-render'
+                     }">
+                  <template x-if="event.type === 'render'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  </template>
+                  <template x-if="event.type === 'mount'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                  </template>
+                  <template x-if="event.type === 'unmount'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                  </template>
+                  <template x-if="event.type === 'props-change'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                  </template>
+                  <template x-if="event.type === 'wasted-render'">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  </template>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium truncate" x-text="event.component"></div>
+                  <div class="text-xs text-zinc-500" x-text="event.message"></div>
+                </div>
+                <div class="text-xs text-zinc-600" x-text="event.time"></div>
+              </div>
+            </template>
+            <template x-if="events.length === 0">
+              <div class="text-center py-8 text-zinc-500 text-sm">
+                <p>No events yet</p>
+                <p class="text-xs mt-1">Run your code to see events</p>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Component Tree Panel -->
+      <div x-show="rightPanel === 'tree'" class="flex-1 overflow-auto p-4">
+        <div class="metrics-card p-4">
+          <h3 class="text-sm font-medium mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+            </svg>
+            Component Tree
+          </h3>
+          <div class="space-y-1">
+            <template x-for="node in componentTree" :key="node.id">
+              <div class="tree-node rounded-lg px-3 py-2 cursor-pointer"
+                   :class="selectedComponent === node.id ? 'active' : ''"
+                   :style="`padding-left: ${node.depth * 20 + 12}px`"
+                   @click="selectComponent(node.id)">
+                <div class="flex items-center gap-2">
+                  <span class="text-blue-400">&lt;</span>
+                  <span class="font-medium" x-text="node.name"></span>
+                  <span class="text-blue-400">/&gt;</span>
+                  <span class="text-xs text-zinc-500" x-text="`${node.renderCount} renders`"></span>
+                  <template x-if="node.wastedRenders > 0">
+                    <span class="text-xs text-amber-400">⚠ <span x-text="node.wastedRenders"></span> wasted</span>
+                  </template>
+                </div>
+              </div>
+            </template>
+            <template x-if="componentTree.length === 0">
+              <div class="text-center py-8 text-zinc-500 text-sm">
+                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                </svg>
+                <p>No components mounted</p>
+                <p class="text-xs mt-1">Run your code to see the tree</p>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Selected Component Details -->
+        <template x-if="selectedComponent">
+          <div class="metrics-card p-4 mt-4">
+            <h3 class="text-sm font-medium mb-4">Component Details</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-zinc-400">Name</span>
+                <span class="font-medium" x-text="getSelectedComponentDetails().name"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-400">Renders</span>
+                <span class="font-medium" x-text="getSelectedComponentDetails().renderCount"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-400">Avg Render Time</span>
+                <span class="font-medium" x-text="`${getSelectedComponentDetails().avgRenderTime.toFixed(2)}ms`"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-400">Wasted Renders</span>
+                <span class="font-medium" :class="getSelectedComponentDetails().wastedRenders > 0 ? 'text-amber-400' : ''" x-text="getSelectedComponentDetails().wastedRenders"></span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Timeline Panel -->
+      <div x-show="rightPanel === 'timeline'" class="flex-1 overflow-auto p-4">
+        <div class="metrics-card p-4">
+          <h3 class="text-sm font-medium mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Render Timeline
+          </h3>
+          <div class="space-y-3">
+            <template x-for="(item, index) in timeline" :key="index">
+              <div class="relative">
+                <div class="flex items-center gap-3 mb-1">
+                  <span class="text-xs text-zinc-500 w-16" x-text="item.time"></span>
+                  <span class="text-sm font-medium" x-text="item.component"></span>
+                  <span class="text-xs px-2 py-0.5 rounded-full"
+                        :class="{
+                          'bg-blue-500/20 text-blue-400': item.phase === 'mount',
+                          'bg-purple-500/20 text-purple-400': item.phase === 'update',
+                          'bg-red-500/20 text-red-400': item.phase === 'unmount'
+                        }"
+                        x-text="item.phase"></span>
+                </div>
+                <div class="ml-16 flex items-center gap-2">
+                  <div class="timeline-bar flex-1 bg-zinc-800 overflow-hidden rounded-full">
+                    <div class="h-full rounded-full transition-all duration-500"
+                         :style="`width: ${Math.min(100, (item.duration / 20) * 100)}%`"
+                         :class="item.duration > 16 ? 'bg-red-500' : item.duration > 8 ? 'bg-amber-500' : 'bg-blue-500'">
+                    </div>
+                  </div>
+                  <span class="text-xs text-zinc-400 w-16 text-right" x-text="`${item.duration.toFixed(2)}ms`"></span>
+                </div>
+              </div>
+            </template>
+            <template x-if="timeline.length === 0">
+              <div class="text-center py-8 text-zinc-500 text-sm">
+                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <p>No timeline data</p>
+                <p class="text-xs mt-1">Trigger renders to see the timeline</p>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div x-show="showShortcuts" x-transition class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+       @click.self="showShortcuts = false" @keydown.escape.window="showShortcuts = false">
+    <div class="bg-zinc-900 border border-white/10 rounded-2xl max-w-md w-full p-6">
+      <h2 class="text-lg font-bold mb-4">Keyboard Shortcuts</h2>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">Run code</span>
+          <kbd class="px-2 py-1 bg-white/5 rounded text-sm">⌘R</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">Save</span>
+          <kbd class="px-2 py-1 bg-white/5 rounded text-sm">⌘S</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">Toggle shortcuts</span>
+          <kbd class="px-2 py-1 bg-white/5 rounded text-sm">⌘/</kbd>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">Reset playground</span>
+          <kbd class="px-2 py-1 bg-white/5 rounded text-sm">⌘⇧R</kbd>
+        </div>
+      </div>
+      <button @click="showShortcuts = false" class="mt-6 w-full py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-sm">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Monaco Editor Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script>
+    // Configure Monaco Editor
+    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+
+    let monacoEditor = null;
+
+    require(['vs/editor/editor.main'], function () {
+      // Define custom dark theme
+      monaco.editor.defineTheme('reactscope-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'comment', foreground: '6b7280', fontStyle: 'italic' },
+          { token: 'keyword', foreground: 'c084fc' },
+          { token: 'string', foreground: '34d399' },
+          { token: 'number', foreground: 'f472b6' },
+          { token: 'type', foreground: '60a5fa' },
+        ],
+        colors: {
+          'editor.background': '#1e1e1e',
+          'editor.foreground': '#fafafa',
+          'editor.lineHighlightBackground': '#ffffff08',
+          'editor.selectionBackground': '#3b82f640',
+          'editorCursor.foreground': '#3b82f6',
+          'editorLineNumber.foreground': '#4b5563',
+          'editorLineNumber.activeForeground': '#9ca3af',
+        }
+      });
+
+      monacoEditor = monaco.editor.create(document.getElementById('editor'), {
+        value: getDefaultCode(),
+        language: 'typescript',
+        theme: 'reactscope-dark',
+        fontSize: 14,
+        fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
+        lineNumbers: 'on',
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        tabSize: 2,
+        wordWrap: 'on',
+        padding: { top: 16, bottom: 16 },
+        renderLineHighlight: 'all',
+        cursorBlinking: 'smooth',
+        smoothScrolling: true,
+        contextmenu: true,
+        folding: true,
+        bracketPairColorization: { enabled: true },
+      });
+
+      // Update cursor position
+      monacoEditor.onDidChangeCursorPosition((e) => {
+        Alpine.store('cursor', { line: e.position.lineNumber, column: e.position.column });
+      });
+
+      // Keyboard shortcuts
+      monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, () => {
+        document.querySelector('[x-data]').__x.$data.runCode();
+      });
+
+      monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, (e) => {
+        // Prevent default save
+      });
+    });
+
+    function getDefaultCode() {
+      return `import React, { useState } from 'react'
+import { useScope } from '@oxog/reactscope'
+
+// A simple counter component with ReactScope profiling
+function Counter() {
+  const scope = useScope('Counter')
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="p-6 bg-zinc-800 rounded-xl">
+      <h2 className="text-2xl font-bold mb-4">
+        Count: {count}
+      </h2>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setCount(c => c - 1)}
+          className="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600"
+        >
+          -
+        </button>
+        <button
+          onClick={() => setCount(c => c + 1)}
+          className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          +
+        </button>
+      </div>
+      <p className="mt-4 text-sm text-zinc-400">
+        Renders: {scope.renderCount}
+      </p>
+    </div>
+  )
+}
+
+export default function App() {
+  const scope = useScope('App')
+
+  return (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-6">
+        ReactScope Demo
+      </h1>
+      <Counter />
+    </div>
+  )
+}`;
+    }
+
+    // Alpine.js store for cursor position
+    document.addEventListener('alpine:init', () => {
+      Alpine.store('cursor', { line: 1, column: 1 });
+    });
+  </script>
+
+  <script>
+    function playground() {
+      return {
+        // Editor state
+        activeTab: 'app',
+        tabs: [
+          { id: 'app', name: 'App.tsx' },
+        ],
+        cursorLine: 1,
+        cursorColumn: 1,
+        editorWidth: 50,
+        isResizing: false,
+        isRunning: false,
+        hasOutput: false,
+        previewOutput: '',
+
+        // Right panel
+        rightPanel: 'preview',
+
+        // Shortcuts modal
+        showShortcuts: false,
+
+        // Examples
+        currentExample: { id: 'counter', name: 'Counter' },
+        examples: [
+          {
+            id: 'counter',
+            name: 'Counter',
+            description: 'Simple counter with state',
+            icon: '🔢',
+            iconBg: 'bg-blue-500/20',
+            code: getDefaultCode()
+          },
+          {
+            id: 'todo',
+            name: 'Todo List',
+            description: 'List with add/remove',
+            icon: '✅',
+            iconBg: 'bg-green-500/20',
+            code: `import React, { useState } from 'react'
+import { useScope } from '@oxog/reactscope'
+
+function TodoItem({ text, onRemove }) {
+  const scope = useScope('TodoItem')
+
+  return (
+    <div className="flex items-center justify-between p-3 bg-zinc-800 rounded-lg">
+      <span>{text}</span>
+      <button
+        onClick={onRemove}
+        className="text-red-400 hover:text-red-300"
+      >
+        Remove
+      </button>
+    </div>
+  )
+}
+
+export default function App() {
+  const scope = useScope('App')
+  const [todos, setTodos] = useState(['Learn React', 'Try ReactScope'])
+  const [input, setInput] = useState('')
+
+  const addTodo = () => {
+    if (input.trim()) {
+      setTodos([...todos, input])
+      setInput('')
+    }
+  }
+
+  return (
+    <div className="p-8 max-w-md">
+      <h1 className="text-2xl font-bold mb-4">Todo List</h1>
+      <div className="flex gap-2 mb-4">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Add a todo..."
+          className="flex-1 px-4 py-2 bg-zinc-800 rounded-lg"
+        />
+        <button
+          onClick={addTodo}
+          className="px-4 py-2 bg-blue-500 rounded-lg"
+        >
+          Add
+        </button>
+      </div>
+      <div className="space-y-2">
+        {todos.map((todo, i) => (
+          <TodoItem
+            key={i}
+            text={todo}
+            onRemove={() => setTodos(todos.filter((_, j) => j !== i))}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}`
+          },
+          {
+            id: 'fetch',
+            name: 'Data Fetching',
+            description: 'Async data loading',
+            icon: '🌐',
+            iconBg: 'bg-purple-500/20',
+            code: `import React, { useState, useEffect } from 'react'
+import { useScope } from '@oxog/reactscope'
+
+function UserCard({ user }) {
+  const scope = useScope('UserCard')
+
+  return (
+    <div className="p-4 bg-zinc-800 rounded-xl">
+      <div className="flex items-center gap-4">
+        <img
+          src={user.avatar}
+          alt={user.name}
+          className="w-12 h-12 rounded-full"
+        />
+        <div>
+          <h3 className="font-bold">{user.name}</h3>
+          <p className="text-sm text-zinc-400">{user.email}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function App() {
+  const scope = useScope('App')
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulated API call
+    setTimeout(() => {
+      setUsers([
+        { id: 1, name: 'Alice', email: 'alice@example.com', avatar: 'https://i.pravatar.cc/100?u=1' },
+        { id: 2, name: 'Bob', email: 'bob@example.com', avatar: 'https://i.pravatar.cc/100?u=2' },
+        { id: 3, name: 'Charlie', email: 'charlie@example.com', avatar: 'https://i.pravatar.cc/100?u=3' },
+      ])
+      setLoading(false)
+    }, 1000)
+  }, [])
+
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Users</h1>
+      {loading ? (
+        <div className="text-zinc-400">Loading...</div>
+      ) : (
+        <div className="space-y-3">
+          {users.map(user => (
+            <UserCard key={user.id} user={user} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}`
+          },
+          {
+            id: 'form',
+            name: 'Form Validation',
+            description: 'Input with validation',
+            icon: '📝',
+            iconBg: 'bg-amber-500/20',
+            code: `import React, { useState, useMemo } from 'react'
+import { useScope } from '@oxog/reactscope'
+
+function FormInput({ label, value, onChange, error }) {
+  const scope = useScope('FormInput')
+
+  return (
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <input
+        value={value}
+        onChange={onChange}
+        className={\`w-full px-4 py-2 bg-zinc-800 rounded-lg border \${
+          error ? 'border-red-500' : 'border-transparent'
+        }\`}
+      />
+      {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+    </div>
+  )
+}
+
+export default function App() {
+  const scope = useScope('App')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const errors = useMemo(() => ({
+    email: !email.includes('@') ? 'Invalid email' : '',
+    password: password.length < 8 ? 'Min 8 characters' : '',
+  }), [email, password])
+
+  const isValid = !errors.email && !errors.password
+
+  return (
+    <div className="p-8 max-w-sm">
+      <h1 className="text-2xl font-bold mb-6">Sign Up</h1>
+      <FormInput
+        label="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        error={submitted ? errors.email : ''}
+      />
+      <FormInput
+        label="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        error={submitted ? errors.password : ''}
+      />
+      <button
+        onClick={() => setSubmitted(true)}
+        className={\`w-full py-2 rounded-lg \${
+          isValid ? 'bg-blue-500 hover:bg-blue-600' : 'bg-zinc-700'
+        }\`}
+      >
+        Submit
+      </button>
+    </div>
+  )
+}`
+          }
+        ],
+
+        // Metrics
+        metrics: {
+          renderCount: 0,
+          avgRenderTime: 0,
+          wastedRenders: 0,
+          propsChanges: 0,
+          totalRenderTime: 0,
+        },
+        renderTimes: [],
+        maxRenderTime: 20,
+        events: [],
+        timeline: [],
+        componentTree: [],
+        selectedComponent: null,
+
+        init() {
+          // Keyboard shortcuts
+          document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'r' && !e.shiftKey) {
+              e.preventDefault();
+              this.runCode();
+            }
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'R') {
+              e.preventDefault();
+              this.resetPlayground();
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+              e.preventDefault();
+              this.showShortcuts = !this.showShortcuts;
+            }
+          });
+
+          // Track cursor position from Monaco
+          this.$watch('$store.cursor', (cursor) => {
+            this.cursorLine = cursor.line;
+            this.cursorColumn = cursor.column;
+          });
+        },
+
+        loadExample(example) {
+          this.currentExample = example;
+          if (monacoEditor) {
+            monacoEditor.setValue(example.code);
+          }
+          this.resetMetrics();
+        },
+
+        runCode() {
+          this.isRunning = true;
+          this.hasOutput = true;
+
+          // Simulate running the code
+          setTimeout(() => {
+            this.isRunning = false;
+            this.simulateMount();
+
+            // Generate preview output
+            this.previewOutput = `
+              <div class="text-center py-8">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg mb-4">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Component Mounted
+                </div>
+                <p class="text-zinc-400 text-sm">Your React component is running with ReactScope profiling enabled.</p>
+                <p class="text-zinc-500 text-xs mt-2">Use the buttons below to simulate different scenarios.</p>
+              </div>
+            `;
+
+            // Build component tree
+            this.buildComponentTree();
+          }, 500);
+        },
+
+        resetPlayground() {
+          if (monacoEditor) {
+            monacoEditor.setValue(getDefaultCode());
+          }
+          this.currentExample = this.examples[0];
+          this.resetMetrics();
+          this.hasOutput = false;
+          this.previewOutput = '';
+        },
+
+        resetMetrics() {
+          this.metrics = {
+            renderCount: 0,
+            avgRenderTime: 0,
+            wastedRenders: 0,
+            propsChanges: 0,
+            totalRenderTime: 0,
+          };
+          this.renderTimes = [];
+          this.events = [];
+          this.timeline = [];
+          this.componentTree = [];
+          this.selectedComponent = null;
+        },
+
+        clearEvents() {
+          this.events = [];
+          this.timeline = [];
+        },
+
+        // Simulation functions
+        simulateRender() {
+          const duration = 2 + Math.random() * 10;
+          this.metrics.renderCount++;
+          this.metrics.totalRenderTime += duration;
+          this.metrics.avgRenderTime = this.metrics.totalRenderTime / this.metrics.renderCount;
+          this.renderTimes.push(duration);
+
+          if (duration > this.maxRenderTime) {
+            this.maxRenderTime = duration + 5;
+          }
+
+          const now = new Date();
+          const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+          this.events.push({
+            type: 'render',
+            component: this.currentExample.name === 'Counter' ? 'Counter' : 'App',
+            message: `Rendered in ${duration.toFixed(2)}ms`,
+            time,
+          });
+
+          this.timeline.push({
+            time,
+            component: 'Counter',
+            phase: 'update',
+            duration,
+          });
+
+          // Update component tree
+          this.updateComponentTreeRender();
+        },
+
+        simulatePropsChange() {
+          this.metrics.propsChanges++;
+          const now = new Date();
+          const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+          this.events.push({
+            type: 'props-change',
+            component: 'Counter',
+            message: 'Props changed: count',
+            time,
+          });
+
+          // Also trigger a render
+          this.simulateRender();
+        },
+
+        simulateWastedRender() {
+          const duration = 1 + Math.random() * 5;
+          this.metrics.wastedRenders++;
+          this.renderTimes.push(duration);
+
+          const now = new Date();
+          const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+          this.events.push({
+            type: 'wasted-render',
+            component: 'Counter',
+            message: `Wasted render (${duration.toFixed(2)}ms) - no visible changes`,
+            time,
+          });
+
+          // Update component tree wasted renders
+          const counter = this.componentTree.find(c => c.name === 'Counter');
+          if (counter) {
+            counter.wastedRenders++;
+          }
+        },
+
+        simulateMount() {
+          const now = new Date();
+          const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+          this.events.push({
+            type: 'mount',
+            component: 'App',
+            message: 'Component mounted',
+            time,
+          });
+
+          this.timeline.push({
+            time,
+            component: 'App',
+            phase: 'mount',
+            duration: 3.5,
+          });
+
+          setTimeout(() => {
+            this.events.push({
+              type: 'mount',
+              component: 'Counter',
+              message: 'Component mounted',
+              time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+            });
+
+            this.timeline.push({
+              time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+              component: 'Counter',
+              phase: 'mount',
+              duration: 2.1,
+            });
+          }, 100);
+        },
+
+        simulateUnmount() {
+          const now = new Date();
+          const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+          this.events.push({
+            type: 'unmount',
+            component: 'Counter',
+            message: 'Component unmounted',
+            time,
+          });
+
+          // Remove from tree
+          this.componentTree = this.componentTree.filter(c => c.name !== 'Counter');
+        },
+
+        buildComponentTree() {
+          this.componentTree = [
+            { id: 'app', name: 'App', depth: 0, renderCount: 1, wastedRenders: 0, avgRenderTime: 3.5 },
+            { id: 'counter', name: 'Counter', depth: 1, renderCount: 1, wastedRenders: 0, avgRenderTime: 2.1 },
+          ];
+        },
+
+        updateComponentTreeRender() {
+          const counter = this.componentTree.find(c => c.name === 'Counter');
+          if (counter) {
+            counter.renderCount++;
+            counter.avgRenderTime = this.metrics.avgRenderTime;
+          }
+        },
+
+        selectComponent(id) {
+          this.selectedComponent = this.selectedComponent === id ? null : id;
+        },
+
+        getSelectedComponentDetails() {
+          return this.componentTree.find(c => c.id === this.selectedComponent) || {
+            name: '',
+            renderCount: 0,
+            avgRenderTime: 0,
+            wastedRenders: 0,
+          };
+        },
+
+        // Resize functionality
+        startResize(e) {
+          this.isResizing = true;
+          const startX = e.clientX;
+          const startWidth = this.editorWidth;
+
+          const onMouseMove = (e) => {
+            const deltaX = e.clientX - startX;
+            const containerWidth = window.innerWidth;
+            const newWidth = startWidth + (deltaX / containerWidth) * 100;
+            this.editorWidth = Math.min(Math.max(newWidth, 30), 70);
+          };
+
+          const onMouseUp = () => {
+            this.isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+          };
+
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+        },
+      };
+    }
+
+    function getDefaultCode() {
+      return `import React, { useState } from 'react'
+import { useScope } from '@oxog/reactscope'
+
+// A simple counter component with ReactScope profiling
+function Counter() {
+  const scope = useScope('Counter')
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="p-6 bg-zinc-800 rounded-xl">
+      <h2 className="text-2xl font-bold mb-4">
+        Count: {count}
+      </h2>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setCount(c => c - 1)}
+          className="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600"
+        >
+          -
+        </button>
+        <button
+          onClick={() => setCount(c => c + 1)}
+          className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          +
+        </button>
+      </div>
+      <p className="mt-4 text-sm text-zinc-400">
+        Renders: {scope.renderCount}
+      </p>
+    </div>
+  )
+}
+
+export default function App() {
+  const scope = useScope('App')
+
+  return (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-6">
+        ReactScope Demo
+      </h1>
+      <Counter />
+    </div>
+  )
+}`;
+    }
+  </script>
+</body>
+</html>
