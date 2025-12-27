@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Components API - ReactScope</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="./" class="text-white">API</a>
+        <a href="../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <nav class="text-sm text-zinc-400 mb-8">
+      <a href="./" class="hover:text-white">API</a> / Components
+    </nav>
+
+    <h1 class="text-4xl font-bold mb-8">Components</h1>
+
+    <p class="text-xl text-zinc-400 mb-12">
+      ReactScope provides components for declarative performance tracking.
+    </p>
+
+    <!-- Scope Component -->
+    <section class="mb-16">
+      <h2 class="text-3xl font-semibold mb-6">Scope</h2>
+      <p class="text-zinc-400 mb-4">
+        A wrapper component that tracks the performance of its children using React's Profiler API.
+      </p>
+
+      <h3 class="text-xl font-semibold mb-3">Usage</h3>
+      <pre class="mb-6"><code class="language-tsx">import { Scope } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;Scope
+      name="ExpensiveList"
+      trackProps={true}
+      onRender={(metrics) => console.log(metrics)}
+    &gt;
+      &lt;ExpensiveList items={items} /&gt;
+    &lt;/Scope&gt;
+  )
+}</code></pre>
+
+      <h3 class="text-xl font-semibold mb-3">Props</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="border-b border-zinc-700">
+            <tr>
+              <th class="py-3 px-4">Prop</th>
+              <th class="py-3 px-4">Type</th>
+              <th class="py-3 px-4">Default</th>
+              <th class="py-3 px-4">Description</th>
+            </tr>
+          </thead>
+          <tbody class="text-zinc-400">
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">name</td>
+              <td class="py-3 px-4 font-mono text-sm">string</td>
+              <td class="py-3 px-4 font-mono text-sm">required</td>
+              <td class="py-3 px-4">Unique identifier for this scope</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">trackProps</td>
+              <td class="py-3 px-4 font-mono text-sm">boolean</td>
+              <td class="py-3 px-4 font-mono text-sm">false</td>
+              <td class="py-3 px-4">Track props changes between renders</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">onRender</td>
+              <td class="py-3 px-4 font-mono text-sm">(metrics) => void</td>
+              <td class="py-3 px-4 font-mono text-sm">undefined</td>
+              <td class="py-3 px-4">Callback after each render</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-mono text-sm">children</td>
+              <td class="py-3 px-4 font-mono text-sm">ReactNode</td>
+              <td class="py-3 px-4 font-mono text-sm">required</td>
+              <td class="py-3 px-4">Components to track</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- withScope HOC -->
+    <section class="mb-16">
+      <h2 class="text-3xl font-semibold mb-6">withScope (HOC)</h2>
+      <p class="text-zinc-400 mb-4">
+        A Higher-Order Component for wrapping class components or when you prefer the HOC pattern.
+      </p>
+
+      <h3 class="text-xl font-semibold mb-3">Usage</h3>
+      <pre class="mb-6"><code class="language-tsx">import { withScope } from '@oxog/reactscope'
+
+function MyComponent({ data }) {
+  return &lt;div&gt;{data}&lt;/div&gt;
+}
+
+export default withScope(MyComponent, {
+  name: 'MyComponent',
+  trackProps: true,
+  onRender: (metrics) => {
+    console.log('Rendered in', metrics.duration, 'ms')
+  }
+})</code></pre>
+
+      <h3 class="text-xl font-semibold mb-3">Options</h3>
+      <pre><code class="language-typescript">interface WithScopeOptions {
+  // Component name for tracking
+  name?: string
+
+  // Track props changes
+  trackProps?: boolean
+
+  // Render callback
+  onRender?: (metrics: RenderMetrics) => void
+}</code></pre>
+    </section>
+
+    <!-- Render Metrics -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-6">RenderMetrics Type</h2>
+      <p class="text-zinc-400 mb-4">
+        The metrics object passed to onRender callbacks:
+      </p>
+      <pre><code class="language-typescript">interface RenderMetrics {
+  // Component identifier
+  componentId: string
+  componentName: string
+
+  // Timing
+  duration: number
+  phase: 'mount' | 'update' | 'nested-update'
+  timestamp: number
+
+  // Counts
+  renderCount: number
+  wastedRenders: number
+
+  // Averages
+  averageRenderTime: number
+
+  // Props diff (if trackProps enabled)
+  propsChanged?: string[]
+}</code></pre>
+    </section>
+  </main>
+</body>
+</html>

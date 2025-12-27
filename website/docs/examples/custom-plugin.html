@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Plugin - ReactScope Examples</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="../api/" class="text-zinc-400 hover:text-white transition">API</a>
+        <a href="./" class="text-white">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <nav class="text-sm text-zinc-400 mb-8">
+      <a href="./" class="hover:text-white">Examples</a> / Custom Plugin
+    </nav>
+
+    <h1 class="text-4xl font-bold mb-8">Creating a Custom Plugin</h1>
+
+    <p class="text-xl text-zinc-400 mb-8">
+      Learn how to extend ReactScope with your own plugins using the micro-kernel architecture.
+    </p>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Plugin Structure</h2>
+      <pre><code class="language-typescript">import { createPlugin, Plugin } from '@oxog/reactscope'
+
+interface MyPluginAPI {
+  getData: () => any[]
+  clear: () => void
+}
+
+const myPlugin: Plugin&lt;MyPluginAPI&gt; = createPlugin({
+  // Required: unique name
+  name: 'my-plugin',
+
+  // Required: semver version
+  version: '1.0.0',
+
+  // Optional: plugin description
+  description: 'My custom plugin',
+
+  // Event hooks
+  hooks: {
+    onRender: (event) => {
+      console.log(`${event.componentName} rendered`)
+    },
+    onMount: (event) => {
+      console.log(`${event.componentName} mounted`)
+    },
+    onUnmount: (event) => {
+      console.log(`${event.componentName} unmounted`)
+    }
+  },
+
+  // Public API exposed to other plugins and consumers
+  api: {
+    getData: () => [],
+    clear: () => {}
+  }
+})</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Analytics Plugin Example</h2>
+      <pre><code class="language-typescript">// analytics-plugin.ts
+import { createPlugin, RenderEvent } from '@oxog/reactscope'
+
+interface AnalyticsData {
+  component: string
+  duration: number
+  timestamp: number
+}
+
+interface AnalyticsAPI {
+  getSlowRenders: (threshold?: number) => AnalyticsData[]
+  getStats: () => { total: number; avgDuration: number }
+  flush: () => void
+}
+
+export const createAnalyticsPlugin = () => {
+  const renders: AnalyticsData[] = []
+
+  return createPlugin&lt;AnalyticsAPI&gt;({
+    name: 'analytics',
+    version: '1.0.0',
+
+    hooks: {
+      onRender: (event: RenderEvent) => {
+        renders.push({
+          component: event.componentName,
+          duration: event.duration,
+          timestamp: Date.now()
+        })
+
+        // Send slow renders to analytics service
+        if (event.duration > 16) {
+          sendToAnalytics({
+            type: 'slow_render',
+            component: event.componentName,
+            duration: event.duration
+          })
+        }
+      }
+    },
+
+    api: {
+      getSlowRenders: (threshold = 16) => {
+        return renders.filter(r => r.duration > threshold)
+      },
+
+      getStats: () => {
+        const total = renders.length
+        const avgDuration = total > 0
+          ? renders.reduce((sum, r) => sum + r.duration, 0) / total
+          : 0
+        return { total, avgDuration }
+      },
+
+      flush: () => {
+        renders.length = 0
+      }
+    }
+  })
+}
+
+function sendToAnalytics(data: any) {
+  // Your analytics implementation
+  console.log('Analytics:', data)
+}</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Using the Plugin</h2>
+      <pre><code class="language-tsx">import { ReactScopeProvider } from '@oxog/reactscope'
+import { createAnalyticsPlugin } from './analytics-plugin'
+
+const analyticsPlugin = createAnalyticsPlugin()
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      plugins={[analyticsPlugin]}
+      onReady={(kernel) => {
+        // Access plugin API
+        const analytics = kernel.getPlugin('analytics')
+
+        // Use plugin methods
+        setInterval(() => {
+          const stats = analytics?.api.getStats()
+          console.log('Stats:', stats)
+        }, 5000)
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Available Hooks</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="border-b border-zinc-700">
+            <tr>
+              <th class="py-3 px-4">Hook</th>
+              <th class="py-3 px-4">Event Data</th>
+              <th class="py-3 px-4">Description</th>
+            </tr>
+          </thead>
+          <tbody class="text-zinc-400">
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">onRender</td>
+              <td class="py-3 px-4 font-mono text-sm">RenderEvent</td>
+              <td class="py-3 px-4">Called after each component render</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">onMount</td>
+              <td class="py-3 px-4 font-mono text-sm">MountEvent</td>
+              <td class="py-3 px-4">Called when a component mounts</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">onUnmount</td>
+              <td class="py-3 px-4 font-mono text-sm">UnmountEvent</td>
+              <td class="py-3 px-4">Called when a component unmounts</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-mono text-sm">onPropsChange</td>
+              <td class="py-3 px-4 font-mono text-sm">PropsChangeEvent</td>
+              <td class="py-3 px-4">Called when tracked props change</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

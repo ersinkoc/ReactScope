@@ -4,47 +4,251 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Getting Started - ReactScope</title>
+  <meta name="description" content="Install ReactScope and set up your first profiling session in minutes.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
   <style>
-    body { background: #0a0a0a; color: #fafafa; }
-    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+    :root {
+      --bg-primary: #050505;
+      --bg-secondary: #0a0a0a;
+      --accent: #3b82f6;
+    }
+    body {
+      background: var(--bg-primary);
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .sidebar-link {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .sidebar-link:hover {
+      color: #fff;
+      padding-left: 0.5rem;
+    }
+    .sidebar-link.active {
+      color: #60a5fa;
+    }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #3b82f6, #a78bfa);
+      border-radius: 2px;
+    }
+    pre[class*="language-"] {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      margin: 0;
+      padding: 1.25rem !important;
+    }
+    code[class*="language-"] {
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .code-block {
+      position: relative;
+    }
+    .code-block .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #71717a;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+    .code-block:hover .copy-btn {
+      opacity: 1;
+    }
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .step-number {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+    .install-tab {
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: none;
+      color: #71717a;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+    }
+    .install-tab.active {
+      color: #fff;
+      border-bottom-color: #3b82f6;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="../" class="flex items-center gap-2">
-        <span class="text-2xl">&#9889;</span>
-        <span class="font-bold text-xl">ReactScope</span>
-      </a>
-      <nav class="flex items-center gap-6">
-        <a href="./" class="text-white">Docs</a>
-        <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
-        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
-      </nav>
+<body class="min-h-screen" x-data="{ mobileMenu: false, activeTab: 'npm' }">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-white/5 sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="../" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+            <span class="text-lg">⚡</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight">ReactScope</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="./" class="text-white font-medium">Docs</a>
+          <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
+          <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </nav>
+
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 text-zinc-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path x-show="mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div x-show="mobileMenu" x-transition class="md:hidden py-4 border-t border-white/5 mt-4">
+        <nav class="flex flex-col gap-4">
+          <a href="./" class="text-white font-medium">Docs</a>
+          <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
+          <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-16">
-    <h1 class="text-4xl font-bold mb-8">Getting Started</h1>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
 
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold mb-4">Installation</h2>
-      <p class="text-zinc-400 mb-4">Install ReactScope using your preferred package manager:</p>
-      <pre class="mb-4"><code class="language-bash">npm install @oxog/reactscope</code></pre>
-      <pre class="mb-4"><code class="language-bash">yarn add @oxog/reactscope</code></pre>
-      <pre><code class="language-bash">pnpm add @oxog/reactscope</code></pre>
-    </section>
+      <!-- Sidebar -->
+      <aside class="hidden lg:block lg:col-span-3">
+        <nav class="sticky top-24 space-y-8">
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">Getting Started</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="#installation" class="sidebar-link active text-zinc-400 text-sm">Installation</a></li>
+              <li><a href="#setup" class="sidebar-link text-zinc-400 text-sm">Basic Setup</a></li>
+              <li><a href="#hook" class="sidebar-link text-zinc-400 text-sm">useScope Hook</a></li>
+              <li><a href="#component" class="sidebar-link text-zinc-400 text-sm">Scope Component</a></li>
+              <li><a href="#dashboard" class="sidebar-link text-zinc-400 text-sm">Dashboard</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">API Reference</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="api/provider.html" class="sidebar-link text-zinc-400 text-sm">Provider</a></li>
+              <li><a href="api/hooks.html" class="sidebar-link text-zinc-400 text-sm">Hooks</a></li>
+              <li><a href="api/components.html" class="sidebar-link text-zinc-400 text-sm">Components</a></li>
+              <li><a href="api/plugins.html" class="sidebar-link text-zinc-400 text-sm">Plugins</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
 
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold mb-4">Basic Setup</h2>
-      <p class="text-zinc-400 mb-4">Wrap your application with <code class="bg-zinc-800 px-2 py-1 rounded">ReactScopeProvider</code>:</p>
-      <pre><code class="language-tsx">import { ReactScopeProvider } from '@oxog/reactscope'
+      <!-- Main Content -->
+      <main class="lg:col-span-9">
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-zinc-500 mb-8">
+          <a href="./" class="hover:text-white transition">Docs</a>
+          <span class="mx-2">/</span>
+          <span class="text-zinc-300">Getting Started</span>
+        </nav>
+
+        <!-- Hero -->
+        <div class="mb-12">
+          <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+            <span class="gradient-text">Getting Started</span>
+          </h1>
+          <p class="text-xl text-zinc-400 max-w-2xl">
+            Install ReactScope and set up your first profiling session in minutes.
+          </p>
+        </div>
+
+        <!-- Installation -->
+        <section id="installation" class="mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="step-number">1</span>
+            <h2 class="text-2xl font-bold">Installation</h2>
+          </div>
+
+          <p class="text-zinc-400 mb-6">Install ReactScope using your preferred package manager:</p>
+
+          <!-- Package Manager Tabs -->
+          <div class="glow-card rounded-xl overflow-hidden">
+            <div class="flex border-b border-white/5">
+              <button @click="activeTab = 'npm'" :class="activeTab === 'npm' ? 'active' : ''" class="install-tab">npm</button>
+              <button @click="activeTab = 'yarn'" :class="activeTab === 'yarn' ? 'active' : ''" class="install-tab">yarn</button>
+              <button @click="activeTab = 'pnpm'" :class="activeTab === 'pnpm' ? 'active' : ''" class="install-tab">pnpm</button>
+            </div>
+            <div class="p-4 bg-black/40 font-mono text-sm">
+              <span class="text-zinc-500">$</span>
+              <span x-show="activeTab === 'npm'" class="text-green-400"> npm install @oxog/reactscope</span>
+              <span x-show="activeTab === 'yarn'" class="text-green-400"> yarn add @oxog/reactscope</span>
+              <span x-show="activeTab === 'pnpm'" class="text-green-400"> pnpm add @oxog/reactscope</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Basic Setup -->
+        <section id="setup" class="mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="step-number">2</span>
+            <h2 class="text-2xl font-bold">Basic Setup</h2>
+          </div>
+
+          <p class="text-zinc-400 mb-6">
+            Wrap your application with <code class="bg-zinc-800/80 px-2 py-0.5 rounded text-blue-400 text-sm">ReactScopeProvider</code>:
+          </p>
+
+          <div class="code-block">
+            <pre><code class="language-tsx">import { ReactScopeProvider } from '@oxog/reactscope'
 
 function App() {
   return (
@@ -53,12 +257,22 @@ function App() {
     &lt;/ReactScopeProvider&gt;
   )
 }</code></pre>
-    </section>
+          </div>
+        </section>
 
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold mb-4">Using the useScope Hook</h2>
-      <p class="text-zinc-400 mb-4">Track a component's performance with the <code class="bg-zinc-800 px-2 py-1 rounded">useScope</code> hook:</p>
-      <pre><code class="language-tsx">import { useScope } from '@oxog/reactscope'
+        <!-- useScope Hook -->
+        <section id="hook" class="mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="step-number">3</span>
+            <h2 class="text-2xl font-bold">Using the useScope Hook</h2>
+          </div>
+
+          <p class="text-zinc-400 mb-6">
+            Track a component's performance with the <code class="bg-zinc-800/80 px-2 py-0.5 rounded text-blue-400 text-sm">useScope</code> hook:
+          </p>
+
+          <div class="code-block">
+            <pre><code class="language-tsx">import { useScope } from '@oxog/reactscope'
 
 function MyComponent({ data }) {
   const scope = useScope('MyComponent')
@@ -70,26 +284,65 @@ function MyComponent({ data }) {
 
   return &lt;div&gt;{data}&lt;/div&gt;
 }</code></pre>
-    </section>
+          </div>
 
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold mb-4">Using the Scope Component</h2>
-      <p class="text-zinc-400 mb-4">Alternatively, wrap components with the <code class="bg-zinc-800 px-2 py-1 rounded">Scope</code> component:</p>
-      <pre><code class="language-tsx">import { Scope } from '@oxog/reactscope'
+          <!-- Metrics Info -->
+          <div class="mt-6 grid sm:grid-cols-3 gap-4">
+            <div class="glow-card rounded-xl p-4">
+              <div class="text-sm font-medium text-blue-400 mb-1">renderCount</div>
+              <div class="text-zinc-400 text-xs">Total number of times the component has rendered</div>
+            </div>
+            <div class="glow-card rounded-xl p-4">
+              <div class="text-sm font-medium text-purple-400 mb-1">averageRenderTime</div>
+              <div class="text-zinc-400 text-xs">Average render duration in milliseconds</div>
+            </div>
+            <div class="glow-card rounded-xl p-4">
+              <div class="text-sm font-medium text-amber-400 mb-1">wastedRenders</div>
+              <div class="text-zinc-400 text-xs">Renders with no actual DOM changes</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scope Component -->
+        <section id="component" class="mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="step-number">4</span>
+            <h2 class="text-2xl font-bold">Using the Scope Component</h2>
+          </div>
+
+          <p class="text-zinc-400 mb-6">
+            Alternatively, wrap components with the <code class="bg-zinc-800/80 px-2 py-0.5 rounded text-blue-400 text-sm">Scope</code> component:
+          </p>
+
+          <div class="code-block">
+            <pre><code class="language-tsx">import { Scope } from '@oxog/reactscope'
 
 function App() {
   return (
-    &lt;Scope name="ExpensiveList" onRender={(metrics) =&gt; console.log(metrics)}&gt;
+    &lt;Scope
+      name="ExpensiveList"
+      onRender={(metrics) =&gt; console.log(metrics)}
+    &gt;
       &lt;ExpensiveList items={items} /&gt;
     &lt;/Scope&gt;
   )
 }</code></pre>
-    </section>
+          </div>
+        </section>
 
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold mb-4">Using the Dashboard</h2>
-      <p class="text-zinc-400 mb-4">Enable the visual dashboard for real-time monitoring:</p>
-      <pre><code class="language-tsx">import { ReactScopeProvider, createDashboardUIPlugin } from '@oxog/reactscope'
+        <!-- Dashboard -->
+        <section id="dashboard" class="mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="step-number">5</span>
+            <h2 class="text-2xl font-bold">Using the Dashboard</h2>
+          </div>
+
+          <p class="text-zinc-400 mb-6">
+            Enable the visual dashboard for real-time monitoring:
+          </p>
+
+          <div class="code-block">
+            <pre><code class="language-tsx">import { ReactScopeProvider, createDashboardUIPlugin } from '@oxog/reactscope'
 
 function App() {
   return (
@@ -104,16 +357,69 @@ function App() {
     &lt;/ReactScopeProvider&gt;
   )
 }</code></pre>
-    </section>
+          </div>
 
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">Next Steps</h2>
-      <ul class="list-disc list-inside text-zinc-400 space-y-2">
-        <li><a href="api/" class="text-blue-400 hover:underline">Explore the full API reference</a></li>
-        <li><a href="examples/" class="text-blue-400 hover:underline">See more examples</a></li>
-        <li><a href="api/plugins.html" class="text-blue-400 hover:underline">Learn about plugins</a></li>
-      </ul>
-    </section>
-  </main>
+          <!-- Keyboard Shortcut -->
+          <div class="mt-6 glow-card rounded-xl p-6 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"/>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium mb-1">Keyboard Shortcut</div>
+              <p class="text-zinc-400 text-sm">
+                Press <kbd class="bg-zinc-800 px-2 py-0.5 rounded text-xs border border-zinc-700">Ctrl</kbd> + <kbd class="bg-zinc-800 px-2 py-0.5 rounded text-xs border border-zinc-700">Shift</kbd> + <kbd class="bg-zinc-800 px-2 py-0.5 rounded text-xs border border-zinc-700">R</kbd> to toggle the dashboard
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Next Steps -->
+        <section class="glow-card rounded-2xl p-8">
+          <h2 class="text-xl font-bold mb-6">Next Steps</h2>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <a href="api/" class="group flex items-center gap-3 p-4 bg-black/20 rounded-xl hover:bg-black/40 transition">
+              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <span class="text-sm group-hover:text-blue-400 transition">Explore API</span>
+            </a>
+            <a href="examples/" class="group flex items-center gap-3 p-4 bg-black/20 rounded-xl hover:bg-black/40 transition">
+              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              <span class="text-sm group-hover:text-blue-400 transition">See Examples</span>
+            </a>
+            <a href="api/plugins.html" class="group flex items-center gap-3 p-4 bg-black/20 rounded-xl hover:bg-black/40 transition">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+              </svg>
+              <span class="text-sm group-hover:text-blue-400 transition">Learn Plugins</span>
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span class="text-sm">⚡</span>
+          </div>
+          <span class="text-zinc-400 text-sm">ReactScope - Zero-dependency React profiler</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-zinc-400">
+          <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
+          <a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a>
+          <span>MIT License</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

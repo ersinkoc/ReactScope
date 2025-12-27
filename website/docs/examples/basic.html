@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basic Usage - ReactScope Examples</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="../api/" class="text-zinc-400 hover:text-white transition">API</a>
+        <a href="./" class="text-white">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <nav class="text-sm text-zinc-400 mb-8">
+      <a href="./" class="hover:text-white">Examples</a> / Basic Usage
+    </nav>
+
+    <h1 class="text-4xl font-bold mb-8">Basic Usage Example</h1>
+
+    <p class="text-xl text-zinc-400 mb-8">
+      A simple example showing how to set up ReactScope and track component renders.
+    </p>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">1. Setup Provider</h2>
+      <pre><code class="language-tsx">// main.tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { ReactScopeProvider } from '@oxog/reactscope'
+import App from './App'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  &lt;React.StrictMode&gt;
+    &lt;ReactScopeProvider onReady={(k) =&gt; console.log('ReactScope ready', k)}&gt;
+      &lt;App /&gt;
+    &lt;/ReactScopeProvider&gt;
+  &lt;/React.StrictMode&gt;
+)</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">2. Track Components</h2>
+      <pre><code class="language-tsx">// App.tsx
+import { useScope } from '@oxog/reactscope'
+import { useState } from 'react'
+
+function App() {
+  const scope = useScope('App')
+  const [count, setCount] = useState(0)
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;ReactScope Basic Example&lt;/h1&gt;
+
+      &lt;div className="metrics"&gt;
+        &lt;p&gt;Render count: {scope.renderCount}&lt;/p&gt;
+        &lt;p&gt;Avg render time: {scope.averageRenderTime.toFixed(2)}ms&lt;/p&gt;
+        &lt;p&gt;Wasted renders: {scope.wastedRenders}&lt;/p&gt;
+      &lt;/div&gt;
+
+      &lt;button onClick={() =&gt; setCount(c =&gt; c + 1)}&gt;
+        Count: {count}
+      &lt;/button&gt;
+
+      &lt;Counter /&gt;
+    &lt;/div&gt;
+  )
+}
+
+function Counter() {
+  const scope = useScope('Counter')
+  const [value, setValue] = useState(0)
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Counter Component&lt;/h2&gt;
+      &lt;p&gt;Value: {value}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setValue(v =&gt; v + 1)}&gt;Increment&lt;/button&gt;
+      &lt;small&gt;Renders: {scope.renderCount}&lt;/small&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default App</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">3. What You'll See</h2>
+      <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
+        <ul class="space-y-3 text-zinc-300">
+          <li>&#10003; Each component shows its render count</li>
+          <li>&#10003; Average render time is calculated automatically</li>
+          <li>&#10003; Wasted renders are detected when props/state don't change</li>
+          <li>&#10003; Counter updates don't affect App's render count</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Next Steps</h2>
+      <ul class="list-disc list-inside text-zinc-400 space-y-2">
+        <li><a href="custom-plugin.html" class="text-blue-400 hover:underline">Create a custom plugin</a></li>
+        <li><a href="../api/hooks.html" class="text-blue-400 hover:underline">Learn about all available hooks</a></li>
+        <li><a href="production.html" class="text-blue-400 hover:underline">Production setup guide</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

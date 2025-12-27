@@ -4,236 +4,491 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReactScope - Zero-Dependency React Performance Profiler</title>
-  <meta name="description" content="Zero-dependency React performance profiler with micro-kernel plugin architecture. Track renders, detect wasted updates, and optimize your React apps.">
+  <meta name="description" content="Track renders, detect wasted updates, monitor memory, and optimize your React applications with a powerful micro-kernel plugin architecture.">
   <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
-  <meta property="og:title" content="ReactScope">
+  <meta property="og:title" content="ReactScope - React Performance Profiler">
   <meta property="og:description" content="Zero-dependency React performance profiler with micro-kernel plugin architecture">
   <meta property="og:image" content="https://reactscope.oxog.dev/assets/images/og-image.svg">
   <meta property="og:url" content="https://reactscope.oxog.dev">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ReactScope">
-  <meta name="twitter:description" content="Zero-dependency React performance profiler with micro-kernel plugin architecture">
   <link rel="canonical" href="https://reactscope.oxog.dev">
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: { 900: '#09090b', 800: '#18181b', 700: '#27272a', 600: '#3f3f46' },
+            accent: { DEFAULT: '#6366f1', light: '#818cf8', dark: '#4f46e5' }
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'gradient': 'gradient 8s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    :root {
-      --bg-primary: #0a0a0a;
-      --bg-secondary: #141414;
-      --bg-tertiary: #1f1f1f;
-      --text-primary: #fafafa;
-      --text-secondary: #a1a1aa;
-      --accent: #3b82f6;
-      --success: #22c55e;
-      --warning: #eab308;
-      --error: #ef4444;
-    }
-    body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-    }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+    @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+    body { background: #09090b; color: #fafafa; }
+
     .gradient-text {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .code-block {
-      background: var(--bg-secondary);
-      border-radius: 8px;
+
+    .gradient-border {
+      position: relative;
+      background: #18181b;
+      border-radius: 1rem;
+    }
+    .gradient-border::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 1rem;
+      padding: 1px;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .glow { box-shadow: 0 0 60px -15px rgba(99, 102, 241, 0.4); }
+    .glow-sm { box-shadow: 0 0 30px -10px rgba(99, 102, 241, 0.3); }
+
+    .hero-grid {
+      background-image: linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .code-window {
+      background: linear-gradient(180deg, #1e1e2e 0%, #181825 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
       overflow: hidden;
     }
-    .code-header {
-      background: var(--bg-tertiary);
-      padding: 8px 16px;
+    .code-window-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 16px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 8px;
     }
-    pre[class*="language-"] {
-      margin: 0;
-      background: var(--bg-secondary);
+    .code-window-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+    pre[class*="language-"] { margin: 0; background: transparent; font-size: 14px; }
+    code[class*="language-"] { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .feature-card {
+      background: linear-gradient(135deg, rgba(24,24,27,0.8) 0%, rgba(24,24,27,0.4) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -20px rgba(99, 102, 241, 0.2);
+    }
+
+    .plugin-card {
+      background: rgba(24,24,27,0.6);
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.2s ease;
+    }
+    .plugin-card:hover {
+      background: rgba(24,24,27,0.9);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .nav-blur {
+      background: rgba(9,9,11,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
   </style>
 </head>
-<body class="min-h-screen" x-data="{ installTab: 'npm' }">
-  <!-- Header -->
-  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">&#9889;</span>
-        <span class="font-bold text-xl">ReactScope</span>
-      </div>
-      <nav class="hidden md:flex items-center gap-6">
-        <a href="docs/" class="text-zinc-400 hover:text-white transition">Docs</a>
-        <a href="docs/api/" class="text-zinc-400 hover:text-white transition">API</a>
-        <a href="docs/examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
-        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition flex items-center gap-1">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
+<body class="min-h-screen antialiased" x-data="{ mobileMenu: false, installTab: 'npm', copied: false }">
+
+  <!-- Navigation -->
+  <header class="fixed top-0 left-0 right-0 z-50 nav-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="/" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <span class="font-bold text-lg">ReactScope</span>
         </a>
-      </nav>
+
+        <nav class="hidden md:flex items-center gap-1">
+          <a href="docs/" class="px-4 py-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-white/5">Docs</a>
+          <a href="docs/api/" class="px-4 py-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-white/5">API</a>
+          <a href="docs/examples/" class="px-4 py-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-white/5">Examples</a>
+          <a href="docs/api/plugins.html" class="px-4 py-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-white/5">Plugins</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a href="https://github.com/ersinkoc/reactscope" class="hidden sm:flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-white/5">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub</span>
+          </a>
+          <a href="docs/getting-started.html" class="hidden sm:inline-flex px-4 py-2 bg-accent hover:bg-accent-dark text-white font-medium rounded-lg transition">
+            Get Started
+          </a>
+          <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 text-zinc-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenu" x-transition class="md:hidden border-t border-white/5 bg-dark-900/95 backdrop-blur-lg">
+      <div class="px-4 py-4 space-y-2">
+        <a href="docs/" class="block px-4 py-3 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg">Documentation</a>
+        <a href="docs/api/" class="block px-4 py-3 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg">API Reference</a>
+        <a href="docs/examples/" class="block px-4 py-3 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="block px-4 py-3 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg">GitHub</a>
+      </div>
     </div>
   </header>
 
-  <!-- Hero -->
-  <section class="py-24 px-4">
-    <div class="max-w-4xl mx-auto text-center">
-      <div class="inline-flex items-center gap-2 bg-zinc-800/50 rounded-full px-4 py-2 mb-8 text-sm">
-        <span class="text-green-400">&#9679;</span>
-        <span>v1.0.0 Released</span>
-      </div>
-      <h1 class="text-5xl md:text-7xl font-bold mb-6">
-        <span class="gradient-text">Zero-Dependency</span><br>
-        React Performance Profiler
-      </h1>
-      <p class="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">
-        Track renders, detect wasted updates, monitor memory, and optimize your React applications with a powerful micro-kernel plugin architecture.
-      </p>
+  <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center justify-center hero-grid overflow-hidden pt-16">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute top-1/4 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse-slow"></div>
+      <div class="absolute bottom-1/4 -right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s"></div>
+    </div>
 
-      <!-- Install Tabs -->
-      <div class="code-block max-w-md mx-auto mb-12">
-        <div class="code-header">
-          <div class="flex gap-2">
-            <button
-              @click="installTab = 'npm'"
-              :class="installTab === 'npm' ? 'text-white' : 'text-zinc-500'"
-              class="text-sm font-medium"
-            >npm</button>
-            <button
-              @click="installTab = 'yarn'"
-              :class="installTab === 'yarn' ? 'text-white' : 'text-zinc-500'"
-              class="text-sm font-medium"
-            >yarn</button>
-            <button
-              @click="installTab = 'pnpm'"
-              :class="installTab === 'pnpm' ? 'text-white' : 'text-zinc-500'"
-              class="text-sm font-medium"
-            >pnpm</button>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <!-- Left: Text Content -->
+        <div class="text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent-light text-sm font-medium mb-8">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+            </span>
+            v1.0.0 — Production Ready
           </div>
-          <button onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent.trim())" class="text-zinc-500 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-          </button>
-        </div>
-        <pre class="p-4"><code class="language-bash" x-text="installTab === 'npm' ? 'npm install @oxog/reactscope' : installTab === 'yarn' ? 'yarn add @oxog/reactscope' : 'pnpm add @oxog/reactscope'"></code></pre>
-      </div>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="docs/getting-started.html" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition">
-          Get Started
-        </a>
-        <a href="docs/api/" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-lg font-medium transition">
-          View API
-        </a>
-      </div>
-    </div>
-  </section>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+            React Performance<br>
+            <span class="gradient-text">Profiler That Scales</span>
+          </h1>
 
-  <!-- Features -->
-  <section class="py-24 px-4 bg-zinc-900/50">
-    <div class="max-w-6xl mx-auto">
-      <h2 class="text-3xl font-bold text-center mb-16">Everything You Need</h2>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
-          <div class="text-3xl mb-4">&#128202;</div>
-          <h3 class="text-xl font-semibold mb-2">Render Tracking</h3>
-          <p class="text-zinc-400">Track every render with precise timing, phase detection, and full history for each component.</p>
-        </div>
-        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
-          <div class="text-3xl mb-4">&#9888;&#65039;</div>
-          <h3 class="text-xl font-semibold mb-2">Wasted Render Detection</h3>
-          <p class="text-zinc-400">Automatically detect renders where props and state haven't changed. Get optimization suggestions.</p>
-        </div>
-        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
-          <div class="text-3xl mb-4">&#128200;</div>
-          <h3 class="text-xl font-semibold mb-2">Props Diffing</h3>
-          <p class="text-zinc-400">Deep comparison of props between renders. Identify which props change most frequently.</p>
-        </div>
-        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
-          <div class="text-3xl mb-4">&#128187;</div>
-          <h3 class="text-xl font-semibold mb-2">Memory Monitoring</h3>
-          <p class="text-zinc-400">Track heap usage, detect memory trends, and identify potential memory leaks.</p>
-        </div>
-        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
-          <div class="text-3xl mb-4">&#127760;</div>
-          <h3 class="text-xl font-semibold mb-2">Network Correlation</h3>
-          <p class="text-zinc-400">Correlate network requests with component renders to understand data flow.</p>
-        </div>
-        <div class="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700">
-          <div class="text-3xl mb-4">&#128268;</div>
-          <h3 class="text-xl font-semibold mb-2">Plugin Architecture</h3>
-          <p class="text-zinc-400">Micro-kernel design with extensible plugin system. Create custom plugins for your needs.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+          <p class="text-lg sm:text-xl text-zinc-400 mb-8 max-w-xl mx-auto lg:mx-0">
+            Zero-dependency profiler with micro-kernel architecture. Track renders, detect wasted updates, and ship faster React apps.
+          </p>
 
-  <!-- Quick Example -->
-  <section class="py-24 px-4">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold text-center mb-16">Quick Start</h2>
-      <div class="code-block">
-        <div class="code-header">
-          <span class="text-sm text-zinc-400">App.tsx</span>
-          <button onclick="navigator.clipboard.writeText(document.getElementById('example-code').textContent)" class="text-zinc-500 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-          </button>
+          <!-- Install Command -->
+          <div class="max-w-md mx-auto lg:mx-0 mb-8">
+            <div class="code-window glow-sm">
+              <div class="code-window-header">
+                <div class="flex gap-2">
+                  <button @click="installTab = 'npm'" :class="installTab === 'npm' ? 'text-white' : 'text-zinc-500'" class="text-sm font-medium hover:text-zinc-300 transition">npm</button>
+                  <button @click="installTab = 'yarn'" :class="installTab === 'yarn' ? 'text-white' : 'text-zinc-500'" class="text-sm font-medium hover:text-zinc-300 transition">yarn</button>
+                  <button @click="installTab = 'pnpm'" :class="installTab === 'pnpm' ? 'text-white' : 'text-zinc-500'" class="text-sm font-medium hover:text-zinc-300 transition">pnpm</button>
+                </div>
+                <button
+                  @click="navigator.clipboard.writeText(installTab === 'npm' ? 'npm install @oxog/reactscope' : installTab === 'yarn' ? 'yarn add @oxog/reactscope' : 'pnpm add @oxog/reactscope'); copied = true; setTimeout(() => copied = false, 2000)"
+                  class="text-zinc-500 hover:text-white transition"
+                >
+                  <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <svg x-show="copied" class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </button>
+              </div>
+              <div class="p-4 font-mono text-sm">
+                <span class="text-zinc-500">$</span>
+                <span class="text-zinc-100" x-text="installTab === 'npm' ? ' npm install @oxog/reactscope' : installTab === 'yarn' ? ' yarn add @oxog/reactscope' : ' pnpm add @oxog/reactscope'"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <a href="docs/getting-started.html" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl transition shadow-lg shadow-accent/25">
+              Get Started
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+            <a href="docs/api/" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition">
+              View API Docs
+            </a>
+          </div>
         </div>
-        <pre class="p-4"><code id="example-code" class="language-tsx">import { ReactScopeProvider, Scope, useScope } from '@oxog/reactscope'
+
+        <!-- Right: Code Example -->
+        <div class="relative">
+          <div class="code-window glow animate-float">
+            <div class="code-window-header">
+              <div class="flex gap-2">
+                <div class="code-window-dot bg-red-500"></div>
+                <div class="code-window-dot bg-yellow-500"></div>
+                <div class="code-window-dot bg-green-500"></div>
+              </div>
+              <span class="text-xs text-zinc-500">App.tsx</span>
+            </div>
+            <pre class="p-5 overflow-x-auto"><code class="language-tsx">import { ReactScopeProvider, useScope } from '@oxog/reactscope'
 
 function App() {
   return (
-    &lt;ReactScopeProvider onReady={(kernel) =&gt; console.log('Ready!', kernel)}&gt;
-      &lt;MyComponent /&gt;
+    &lt;ReactScopeProvider&gt;
+      &lt;Dashboard /&gt;
     &lt;/ReactScopeProvider&gt;
   )
 }
 
-function MyComponent() {
-  const scope = useScope('MyComponent')
+function Dashboard() {
+  const scope = useScope('Dashboard')
 
   return (
     &lt;div&gt;
       &lt;p&gt;Renders: {scope.renderCount}&lt;/p&gt;
-      &lt;p&gt;Avg Time: {scope.averageRenderTime.toFixed(2)}ms&lt;/p&gt;
+      &lt;p&gt;Avg: {scope.averageRenderTime.toFixed(2)}ms&lt;/p&gt;
+      &lt;p&gt;Wasted: {scope.wastedRenders}&lt;/p&gt;
     &lt;/div&gt;
   )
 }</code></pre>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="py-24 px-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
-    <div class="max-w-4xl mx-auto text-center">
-      <h2 class="text-3xl font-bold mb-6">Start Optimizing Today</h2>
-      <p class="text-xl text-zinc-400 mb-8">Zero dependencies. Full TypeScript support. Production ready.</p>
-      <a href="docs/getting-started.html" class="inline-block bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-200 transition">
-        Read the Documentation
-      </a>
+  <!-- Stats Section -->
+  <section class="relative py-16 border-y border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="text-center">
+          <div class="text-3xl sm:text-4xl font-bold gradient-text mb-2">0</div>
+          <div class="text-zinc-500 text-sm">Dependencies</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl sm:text-4xl font-bold gradient-text mb-2">10</div>
+          <div class="text-zinc-500 text-sm">Built-in Plugins</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl sm:text-4xl font-bold gradient-text mb-2">100%</div>
+          <div class="text-zinc-500 text-sm">TypeScript</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl sm:text-4xl font-bold gradient-text mb-2">&lt;5kb</div>
+          <div class="text-zinc-500 text-sm">Core Size (gzip)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-24 lg:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Everything You Need</h2>
+        <p class="text-lg text-zinc-400 max-w-2xl mx-auto">Powerful features to profile, analyze, and optimize your React applications.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="feature-card rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Render Tracking</h3>
+          <p class="text-zinc-400">Track every component render with precise timing, phase detection, and historical data.</p>
+        </div>
+
+        <div class="feature-card rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Wasted Render Detection</h3>
+          <p class="text-zinc-400">Automatically identify unnecessary re-renders when props and state haven't changed.</p>
+        </div>
+
+        <div class="feature-card rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Props Diffing</h3>
+          <p class="text-zinc-400">Deep comparison between renders to identify which props cause updates.</p>
+        </div>
+
+        <div class="feature-card rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-600/20 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Memory Monitoring</h3>
+          <p class="text-zinc-400">Track heap usage over time and detect potential memory leaks in your app.</p>
+        </div>
+
+        <div class="feature-card rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Network Correlation</h3>
+          <p class="text-zinc-400">Link network requests to component renders to understand data flow.</p>
+        </div>
+
+        <div class="feature-card rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-600/20 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Plugin Architecture</h3>
+          <p class="text-zinc-400">Micro-kernel design lets you extend functionality with custom plugins.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plugins Section -->
+  <section class="py-24 lg:py-32 bg-gradient-to-b from-transparent via-accent/5 to-transparent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">10 Built-in Plugins</h2>
+        <p class="text-lg text-zinc-400 max-w-2xl mx-auto">Ready-to-use plugins for common profiling needs. Mix and match as needed.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">📊</div>
+          <div class="font-medium text-sm">Render Tracker</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">🔍</div>
+          <div class="font-medium text-sm">Props Differ</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">⚠️</div>
+          <div class="font-medium text-sm">Wasted Detector</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">🔄</div>
+          <div class="font-medium text-sm">Lifecycle Tracker</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">💾</div>
+          <div class="font-medium text-sm">Memory Tracker</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">🌐</div>
+          <div class="font-medium text-sm">Network Correlator</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">⏱️</div>
+          <div class="font-medium text-sm">Timeline Recorder</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">📝</div>
+          <div class="font-medium text-sm">Console Reporter</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">📤</div>
+          <div class="font-medium text-sm">JSON Exporter</div>
+        </div>
+        <div class="plugin-card rounded-xl p-4 text-center">
+          <div class="text-2xl mb-2">🎨</div>
+          <div class="font-medium text-sm">Dashboard UI</div>
+        </div>
+      </div>
+
+      <div class="text-center mt-8">
+        <a href="docs/api/plugins.html" class="inline-flex items-center gap-2 text-accent-light hover:text-white transition">
+          View all plugins
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24 lg:py-32">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="gradient-border p-8 sm:p-12 text-center glow">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Ready to Optimize?</h2>
+        <p class="text-lg text-zinc-400 mb-8 max-w-xl mx-auto">Start profiling your React app in minutes. Zero config required.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="docs/getting-started.html" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-dark-900 font-semibold rounded-xl hover:bg-zinc-100 transition">
+            Get Started Free
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </a>
+          <a href="https://github.com/ersinkoc/reactscope" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition border border-white/10">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            Star on GitHub
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-zinc-800 py-12 px-4">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-      <div class="flex items-center gap-2">
-        <span class="text-xl">&#9889;</span>
-        <span class="font-semibold">ReactScope</span>
+  <footer class="border-t border-white/5 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <span class="font-bold">ReactScope</span>
+          </div>
+          <p class="text-sm text-zinc-500">Zero-dependency React performance profiler with micro-kernel plugin architecture.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Documentation</h4>
+          <ul class="space-y-2 text-sm text-zinc-400">
+            <li><a href="docs/getting-started.html" class="hover:text-white transition">Getting Started</a></li>
+            <li><a href="docs/api/" class="hover:text-white transition">API Reference</a></li>
+            <li><a href="docs/examples/" class="hover:text-white transition">Examples</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">API</h4>
+          <ul class="space-y-2 text-sm text-zinc-400">
+            <li><a href="docs/api/provider.html" class="hover:text-white transition">Provider</a></li>
+            <li><a href="docs/api/hooks.html" class="hover:text-white transition">Hooks</a></li>
+            <li><a href="docs/api/plugins.html" class="hover:text-white transition">Plugins</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Community</h4>
+          <ul class="space-y-2 text-sm text-zinc-400">
+            <li><a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a></li>
+            <li><a href="https://github.com/ersinkoc/reactscope/issues" class="hover:text-white transition">Issues</a></li>
+            <li><a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="flex gap-6 text-zinc-400">
-        <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
-        <a href="docs/" class="hover:text-white transition">Documentation</a>
+      <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-zinc-500">© 2024 ReactScope. MIT License.</p>
+        <p class="text-sm text-zinc-500">Made with ❤️ by <a href="https://github.com/ersinkoc" class="text-zinc-400 hover:text-white transition">ersinkoc</a></p>
       </div>
-      <p class="text-zinc-500 text-sm">MIT License</p>
     </div>
   </footer>
+
+  <script>
+    Prism.highlightAll();
+  </script>
 </body>
 </html>

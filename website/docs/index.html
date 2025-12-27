@@ -4,112 +4,357 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Documentation - ReactScope</title>
+  <meta name="description" content="Learn how to use ReactScope to profile and optimize your React applications with comprehensive documentation.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
-    body { background: #0a0a0a; color: #fafafa; }
+    :root {
+      --bg-primary: #050505;
+      --bg-secondary: #0a0a0a;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+    }
+    body {
+      background: var(--bg-primary);
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s ease;
+    }
+    .glow-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
+    }
+    .sidebar-link {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .sidebar-link:hover {
+      color: #fff;
+      padding-left: 0.5rem;
+    }
+    .sidebar-link.active {
+      color: #60a5fa;
+    }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #3b82f6, #a78bfa);
+      border-radius: 2px;
+    }
+    .concept-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .concept-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .concept-card:hover::before {
+      opacity: 1;
+    }
+    .icon-box {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    .pulse-slow {
+      animation: pulse-slow 3s ease-in-out infinite;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="../" class="flex items-center gap-2">
-        <span class="text-2xl">&#9889;</span>
-        <span class="font-bold text-xl">ReactScope</span>
-      </a>
-      <nav class="flex items-center gap-6">
-        <a href="./" class="text-white">Docs</a>
-        <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
-        <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
-        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
-      </nav>
+<body class="min-h-screen" x-data="{ mobileMenu: false }">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-white/5 sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="../" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+            <span class="text-lg">⚡</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight">ReactScope</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="./" class="text-white font-medium">Docs</a>
+          <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
+          <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 text-zinc-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path x-show="mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div x-show="mobileMenu" x-transition class="md:hidden py-4 border-t border-white/5 mt-4">
+        <nav class="flex flex-col gap-4">
+          <a href="./" class="text-white font-medium">Docs</a>
+          <a href="api/" class="text-zinc-400 hover:text-white transition">API</a>
+          <a href="examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <div class="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-4 gap-8">
-    <!-- Sidebar -->
-    <aside class="md:col-span-1">
-      <nav class="sticky top-24 space-y-6">
-        <div>
-          <h3 class="font-semibold text-sm text-zinc-400 uppercase tracking-wider mb-3">Getting Started</h3>
-          <ul class="space-y-2">
-            <li><a href="getting-started.html" class="text-zinc-300 hover:text-white">Installation</a></li>
-            <li><a href="getting-started.html#setup" class="text-zinc-300 hover:text-white">Basic Setup</a></li>
-            <li><a href="getting-started.html#dashboard" class="text-zinc-300 hover:text-white">Dashboard</a></li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-semibold text-sm text-zinc-400 uppercase tracking-wider mb-3">API Reference</h3>
-          <ul class="space-y-2">
-            <li><a href="api/provider.html" class="text-zinc-300 hover:text-white">Provider</a></li>
-            <li><a href="api/hooks.html" class="text-zinc-300 hover:text-white">Hooks</a></li>
-            <li><a href="api/components.html" class="text-zinc-300 hover:text-white">Components</a></li>
-            <li><a href="api/plugins.html" class="text-zinc-300 hover:text-white">Plugins</a></li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-semibold text-sm text-zinc-400 uppercase tracking-wider mb-3">Examples</h3>
-          <ul class="space-y-2">
-            <li><a href="examples/basic.html" class="text-zinc-300 hover:text-white">Basic Usage</a></li>
-            <li><a href="examples/custom-plugin.html" class="text-zinc-300 hover:text-white">Custom Plugin</a></li>
-            <li><a href="examples/production.html" class="text-zinc-300 hover:text-white">Production</a></li>
-          </ul>
-        </div>
-      </nav>
-    </aside>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
 
-    <!-- Content -->
-    <main class="md:col-span-3">
-      <h1 class="text-4xl font-bold mb-8">Documentation</h1>
-
-      <p class="text-xl text-zinc-400 mb-12">
-        Welcome to ReactScope documentation. Learn how to profile and optimize your React applications.
-      </p>
-
-      <div class="grid md:grid-cols-2 gap-6">
-        <a href="getting-started.html" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
-          <h2 class="text-xl font-semibold mb-2">Getting Started</h2>
-          <p class="text-zinc-400">Install ReactScope and set up your first profiling session in minutes.</p>
-        </a>
-        <a href="api/" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
-          <h2 class="text-xl font-semibold mb-2">API Reference</h2>
-          <p class="text-zinc-400">Complete reference for all components, hooks, and utilities.</p>
-        </a>
-        <a href="api/plugins.html" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
-          <h2 class="text-xl font-semibold mb-2">Plugins</h2>
-          <p class="text-zinc-400">Learn about built-in plugins and how to create your own.</p>
-        </a>
-        <a href="examples/" class="block bg-zinc-800/50 rounded-xl p-6 border border-zinc-700 hover:border-zinc-500 transition">
-          <h2 class="text-xl font-semibold mb-2">Examples</h2>
-          <p class="text-zinc-400">Real-world examples and best practices.</p>
-        </a>
-      </div>
-
-      <section class="mt-16">
-        <h2 class="text-2xl font-bold mb-6">Key Concepts</h2>
-
-        <div class="space-y-8">
+      <!-- Sidebar -->
+      <aside class="hidden lg:block lg:col-span-3">
+        <nav class="sticky top-24 space-y-8">
           <div>
-            <h3 class="text-lg font-semibold mb-2">Micro-Kernel Architecture</h3>
-            <p class="text-zinc-400">ReactScope uses a micro-kernel architecture where the core kernel provides minimal functionality, and all features are implemented as plugins. This allows for maximum flexibility and tree-shaking.</p>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">Getting Started</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="getting-started.html" class="sidebar-link text-zinc-400 text-sm">Installation</a></li>
+              <li><a href="getting-started.html#setup" class="sidebar-link text-zinc-400 text-sm">Basic Setup</a></li>
+              <li><a href="getting-started.html#dashboard" class="sidebar-link text-zinc-400 text-sm">Dashboard</a></li>
+            </ul>
           </div>
-
           <div>
-            <h3 class="text-lg font-semibold mb-2">Event-Driven Design</h3>
-            <p class="text-zinc-400">All component events (renders, mounts, unmounts, props changes) are emitted through a central event bus. Plugins subscribe to these events to perform their specific functions.</p>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">API Reference</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="api/provider.html" class="sidebar-link text-zinc-400 text-sm">Provider</a></li>
+              <li><a href="api/hooks.html" class="sidebar-link text-zinc-400 text-sm">Hooks</a></li>
+              <li><a href="api/components.html" class="sidebar-link text-zinc-400 text-sm">Components</a></li>
+              <li><a href="api/plugins.html" class="sidebar-link text-zinc-400 text-sm">Plugins</a></li>
+            </ul>
           </div>
-
           <div>
-            <h3 class="text-lg font-semibold mb-2">Centralized Metrics Store</h3>
-            <p class="text-zinc-400">All metrics are stored in a central store, making it easy to query, export, and visualize performance data across your entire application.</p>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">Examples</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="examples/basic.html" class="sidebar-link text-zinc-400 text-sm">Basic Usage</a></li>
+              <li><a href="examples/custom-plugin.html" class="sidebar-link text-zinc-400 text-sm">Custom Plugin</a></li>
+              <li><a href="examples/production.html" class="sidebar-link text-zinc-400 text-sm">Production</a></li>
+            </ul>
           </div>
+        </nav>
+      </aside>
 
-          <div>
-            <h3 class="text-lg font-semibold mb-2">Shadow DOM Dashboard</h3>
-            <p class="text-zinc-400">The visual dashboard renders inside a Shadow DOM to ensure complete CSS isolation from your application. This prevents any style conflicts.</p>
-          </div>
+      <!-- Main Content -->
+      <main class="lg:col-span-9">
+        <!-- Hero -->
+        <div class="mb-12">
+          <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+            <span class="gradient-text">Documentation</span>
+          </h1>
+          <p class="text-xl text-zinc-400 max-w-2xl">
+            Learn how to profile and optimize your React applications with ReactScope's powerful tools and plugins.
+          </p>
         </div>
-      </section>
-    </main>
+
+        <!-- Quick Links Grid -->
+        <div class="grid sm:grid-cols-2 gap-4 mb-16">
+          <a href="getting-started.html" class="glow-card rounded-2xl p-6 group">
+            <div class="flex items-start gap-4">
+              <div class="icon-box w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold mb-1 group-hover:text-blue-400 transition">Getting Started</h2>
+                <p class="text-sm text-zinc-400">Install ReactScope and set up your first profiling session in minutes.</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="api/" class="glow-card rounded-2xl p-6 group">
+            <div class="flex items-start gap-4">
+              <div class="icon-box w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold mb-1 group-hover:text-purple-400 transition">API Reference</h2>
+                <p class="text-sm text-zinc-400">Complete reference for all components, hooks, and utilities.</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="api/plugins.html" class="glow-card rounded-2xl p-6 group">
+            <div class="flex items-start gap-4">
+              <div class="icon-box w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold mb-1 group-hover:text-green-400 transition">Plugins</h2>
+                <p class="text-sm text-zinc-400">Learn about built-in plugins and how to create your own.</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="examples/" class="glow-card rounded-2xl p-6 group">
+            <div class="flex items-start gap-4">
+              <div class="icon-box w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold mb-1 group-hover:text-amber-400 transition">Examples</h2>
+                <p class="text-sm text-zinc-400">Real-world examples and best practices.</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Key Concepts -->
+        <section>
+          <h2 class="text-2xl font-bold mb-8 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+            </span>
+            Key Concepts
+          </h2>
+
+          <div class="grid gap-4">
+            <div class="concept-card glow-card rounded-xl p-6">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold mb-2">Micro-Kernel Architecture</h3>
+                  <p class="text-zinc-400 text-sm leading-relaxed">ReactScope uses a micro-kernel architecture where the core kernel provides minimal functionality, and all features are implemented as plugins. This allows for maximum flexibility and tree-shaking.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="concept-card glow-card rounded-xl p-6">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold mb-2">Event-Driven Design</h3>
+                  <p class="text-zinc-400 text-sm leading-relaxed">All component events (renders, mounts, unmounts, props changes) are emitted through a central event bus. Plugins subscribe to these events to perform their specific functions.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="concept-card glow-card rounded-xl p-6">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold mb-2">Centralized Metrics Store</h3>
+                  <p class="text-zinc-400 text-sm leading-relaxed">All metrics are stored in a central store, making it easy to query, export, and visualize performance data across your entire application.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="concept-card glow-card rounded-xl p-6">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold mb-2">Shadow DOM Dashboard</h3>
+                  <p class="text-zinc-400 text-sm leading-relaxed">The visual dashboard renders inside a Shadow DOM to ensure complete CSS isolation from your application. This prevents any style conflicts.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Install -->
+        <section class="mt-16 glow-card rounded-2xl p-8">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h2 class="text-xl font-bold">Quick Install</h2>
+          </div>
+          <div class="bg-black/40 rounded-xl p-4 font-mono text-sm">
+            <span class="text-zinc-500">$</span> <span class="text-green-400">npm</span> install @oxog/reactscope
+          </div>
+          <a href="getting-started.html" class="inline-flex items-center gap-2 mt-4 text-blue-400 hover:text-blue-300 transition text-sm">
+            View full installation guide
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </section>
+      </main>
+    </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span class="text-sm">⚡</span>
+          </div>
+          <span class="text-zinc-400 text-sm">ReactScope - Zero-dependency React profiler</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-zinc-400">
+          <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
+          <a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a>
+          <span>MIT License</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

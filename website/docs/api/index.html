@@ -4,39 +4,228 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Reference - ReactScope</title>
+  <meta name="description" content="Complete API reference for ReactScope - hooks, components, plugins, and utilities.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
   <style>
-    body { background: #0a0a0a; color: #fafafa; }
-    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+    :root {
+      --bg-primary: #050505;
+      --accent: #3b82f6;
+    }
+    body {
+      background: var(--bg-primary);
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(167, 139, 250, 0.03) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s ease;
+    }
+    .glow-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
+    }
+    .sidebar-link {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .sidebar-link:hover {
+      color: #fff;
+      padding-left: 0.5rem;
+    }
+    pre[class*="language-"] {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      margin: 0;
+      padding: 1.25rem !important;
+    }
+    code[class*="language-"] {
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .api-section {
+      scroll-margin-top: 100px;
+    }
+    .api-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="../../" class="flex items-center gap-2">
-        <span class="text-2xl">&#9889;</span>
-        <span class="font-bold text-xl">ReactScope</span>
-      </a>
-      <nav class="flex items-center gap-6">
-        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
-        <a href="./" class="text-white">API</a>
-        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
-      </nav>
+<body class="min-h-screen" x-data="{ mobileMenu: false }">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-white/5 sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div class="flex items-center justify-between">
+        <a href="../../" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+            <span class="text-lg">⚡</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight">ReactScope</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+          <a href="./" class="text-white font-medium">API</a>
+          <a href="../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="flex items-center gap-2 text-zinc-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </nav>
+
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 text-zinc-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path x-show="mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div x-show="mobileMenu" x-transition class="md:hidden py-4 border-t border-white/5 mt-4">
+        <nav class="flex flex-col gap-4">
+          <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+          <a href="./" class="text-white font-medium">API</a>
+          <a href="../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+          <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-16">
-    <h1 class="text-4xl font-bold mb-8">API Reference</h1>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
 
-    <div class="space-y-12">
-      <!-- Provider -->
-      <section id="provider">
-        <h2 class="text-2xl font-semibold mb-4">ReactScopeProvider</h2>
-        <p class="text-zinc-400 mb-4">The root provider component that initializes the kernel and provides context to the component tree.</p>
-        <pre><code class="language-typescript">interface ReactScopeProviderProps {
+      <!-- Sidebar -->
+      <aside class="hidden lg:block lg:col-span-3">
+        <nav class="sticky top-24 space-y-8">
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">API Reference</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="provider.html" class="sidebar-link text-zinc-400 text-sm">Provider</a></li>
+              <li><a href="hooks.html" class="sidebar-link text-zinc-400 text-sm">Hooks</a></li>
+              <li><a href="components.html" class="sidebar-link text-zinc-400 text-sm">Components</a></li>
+              <li><a href="plugins.html" class="sidebar-link text-zinc-400 text-sm">Plugins</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xs text-zinc-500 uppercase tracking-wider mb-4">On This Page</h3>
+            <ul class="space-y-3 pl-4">
+              <li><a href="#provider" class="sidebar-link text-zinc-400 text-sm">Provider</a></li>
+              <li><a href="#hooks" class="sidebar-link text-zinc-400 text-sm">Hooks</a></li>
+              <li><a href="#components" class="sidebar-link text-zinc-400 text-sm">Components</a></li>
+              <li><a href="#kernel" class="sidebar-link text-zinc-400 text-sm">Kernel</a></li>
+              <li><a href="#utilities" class="sidebar-link text-zinc-400 text-sm">Utilities</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="lg:col-span-9">
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-zinc-500 mb-8">
+          <a href="../" class="hover:text-white transition">Docs</a>
+          <span class="mx-2">/</span>
+          <span class="text-zinc-300">API Reference</span>
+        </nav>
+
+        <!-- Hero -->
+        <div class="mb-12">
+          <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+            <span class="gradient-text">API Reference</span>
+          </h1>
+          <p class="text-xl text-zinc-400 max-w-2xl">
+            Complete reference for all ReactScope exports - hooks, components, plugins, and utilities.
+          </p>
+        </div>
+
+        <!-- Quick Navigation Cards -->
+        <div class="grid sm:grid-cols-2 gap-4 mb-16">
+          <a href="hooks.html" class="glow-card rounded-xl p-5 group">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+              </div>
+              <span class="font-semibold group-hover:text-blue-400 transition">Hooks</span>
+            </div>
+            <p class="text-sm text-zinc-400">useScope, useScopeMetrics, useScopeContext, and more</p>
+          </a>
+
+          <a href="components.html" class="glow-card rounded-xl p-5 group">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/>
+                </svg>
+              </div>
+              <span class="font-semibold group-hover:text-purple-400 transition">Components</span>
+            </div>
+            <p class="text-sm text-zinc-400">Scope, withScope HOC, and declarative tracking</p>
+          </a>
+
+          <a href="plugins.html" class="glow-card rounded-xl p-5 group">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                </svg>
+              </div>
+              <span class="font-semibold group-hover:text-green-400 transition">Plugins</span>
+            </div>
+            <p class="text-sm text-zinc-400">10 built-in plugins and custom plugin API</p>
+          </a>
+
+          <a href="provider.html" class="glow-card rounded-xl p-5 group">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </div>
+              <span class="font-semibold group-hover:text-amber-400 transition">Provider</span>
+            </div>
+            <p class="text-sm text-zinc-400">ReactScopeProvider configuration and options</p>
+          </a>
+        </div>
+
+        <!-- Provider Section -->
+        <section id="provider" class="api-section mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold">ReactScopeProvider</h2>
+          </div>
+          <p class="text-zinc-400 mb-6">The root provider component that initializes the kernel and provides context to the component tree.</p>
+          <pre><code class="language-typescript">interface ReactScopeProviderProps {
   children: React.ReactNode
   enabled?: boolean              // Default: true
   plugins?: Plugin[]             // Additional plugins
@@ -47,105 +236,123 @@
     maxHistorySize?: number      // Default: 1000
   }
 }</code></pre>
-      </section>
+          <a href="provider.html" class="inline-flex items-center gap-2 mt-4 text-blue-400 hover:text-blue-300 transition text-sm">
+            View full documentation
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </section>
 
-      <!-- Hooks -->
-      <section id="hooks">
-        <h2 class="text-2xl font-semibold mb-4">Hooks</h2>
-
-        <div class="space-y-6">
-          <div>
-            <h3 class="text-lg font-medium mb-2">useScope</h3>
-            <p class="text-zinc-400 mb-2">Main profiling hook for tracking component renders.</p>
-            <pre><code class="language-typescript">function useScope(name: string, options?: UseScopeOptions): ScopeHandle
-
-interface ScopeHandle {
-  readonly componentId: string
-  readonly renderCount: number
-  readonly lastRenderTime: number      // ms
-  readonly averageRenderTime: number   // ms
-  readonly wastedRenders: number
-  readonly isTracking: boolean
-  trackRender(duration: number, phase: 'mount' | 'update'): void
-  trackPropsChange(changes: PropsDiff[]): void
-}</code></pre>
+        <!-- Hooks Section -->
+        <section id="hooks" class="api-section mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold">Hooks</h2>
           </div>
 
-          <div>
-            <h3 class="text-lg font-medium mb-2">useScopeMetrics</h3>
-            <p class="text-zinc-400 mb-2">Read-only hook for accessing component metrics.</p>
-            <pre><code class="language-typescript">function useScopeMetrics(componentId: string): ComponentMetrics | undefined</code></pre>
+          <div class="space-y-6">
+            <div class="glow-card rounded-xl p-6">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-blue-400">useScope</h3>
+                <span class="api-badge bg-blue-500/10 text-blue-400 border border-blue-500/20">Primary</span>
+              </div>
+              <p class="text-zinc-400 text-sm mb-4">Main profiling hook for tracking component renders.</p>
+              <pre><code class="language-typescript">function useScope(name: string, options?: UseScopeOptions): ScopeHandle</code></pre>
+            </div>
+
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="text-lg font-semibold text-blue-400 mb-3">useScopeMetrics</h3>
+              <p class="text-zinc-400 text-sm mb-4">Read-only hook for accessing component metrics.</p>
+              <pre><code class="language-typescript">function useScopeMetrics(componentId: string): ComponentMetrics | undefined</code></pre>
+            </div>
+
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="text-lg font-semibold text-blue-400 mb-3">useScopeContext</h3>
+              <p class="text-zinc-400 text-sm mb-4">Access the kernel instance directly.</p>
+              <pre><code class="language-typescript">function useScopeContext(): Kernel</code></pre>
+            </div>
+
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="text-lg font-semibold text-blue-400 mb-3">useAllScopeMetrics</h3>
+              <p class="text-zinc-400 text-sm mb-4">Get metrics for all tracked components.</p>
+              <pre><code class="language-typescript">function useAllScopeMetrics(): Map&lt;string, ComponentMetrics&gt;</code></pre>
+            </div>
+
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="text-lg font-semibold text-blue-400 mb-3">useScopeSummary</h3>
+              <p class="text-zinc-400 text-sm mb-4">Get summary statistics across all components.</p>
+              <pre><code class="language-typescript">function useScopeSummary(): ScopeSummary</code></pre>
+            </div>
           </div>
 
-          <div>
-            <h3 class="text-lg font-medium mb-2">useScopeContext</h3>
-            <p class="text-zinc-400 mb-2">Access the kernel instance directly.</p>
-            <pre><code class="language-typescript">function useScopeContext(): Kernel</code></pre>
+          <a href="hooks.html" class="inline-flex items-center gap-2 mt-6 text-blue-400 hover:text-blue-300 transition text-sm">
+            View full hooks documentation
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </section>
+
+        <!-- Components Section -->
+        <section id="components" class="api-section mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold">Components</h2>
           </div>
 
-          <div>
-            <h3 class="text-lg font-medium mb-2">useAllScopeMetrics</h3>
-            <p class="text-zinc-400 mb-2">Get metrics for all tracked components.</p>
-            <pre><code class="language-typescript">function useAllScopeMetrics(): Map&lt;string, ComponentMetrics&gt;</code></pre>
-          </div>
-
-          <div>
-            <h3 class="text-lg font-medium mb-2">useScopeSummary</h3>
-            <p class="text-zinc-400 mb-2">Get summary statistics across all components.</p>
-            <pre><code class="language-typescript">function useScopeSummary(): {
-  totalComponents: number
-  totalRenders: number
-  totalWastedRenders: number
-  averageRenderTime: number
-}</code></pre>
-          </div>
-        </div>
-      </section>
-
-      <!-- Components -->
-      <section id="components">
-        <h2 class="text-2xl font-semibold mb-4">Components</h2>
-
-        <div class="space-y-6">
-          <div>
-            <h3 class="text-lg font-medium mb-2">Scope</h3>
-            <p class="text-zinc-400 mb-2">Wrapper component that profiles its children using React Profiler API.</p>
-            <pre><code class="language-typescript">interface ScopeProps {
+          <div class="space-y-6">
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="text-lg font-semibold text-purple-400 mb-3">Scope</h3>
+              <p class="text-zinc-400 text-sm mb-4">Wrapper component that profiles its children using React Profiler API.</p>
+              <pre><code class="language-typescript">interface ScopeProps {
   children: React.ReactNode
   name?: string
   onRender?: (metrics: ComponentMetrics) => void
   trackProps?: boolean
   trackState?: boolean
 }</code></pre>
-          </div>
-        </div>
-      </section>
+            </div>
 
-      <!-- HOC -->
-      <section id="hoc">
-        <h2 class="text-2xl font-semibold mb-4">Higher-Order Components</h2>
-
-        <div>
-          <h3 class="text-lg font-medium mb-2">withScope</h3>
-          <p class="text-zinc-400 mb-2">HOC that adds profiling to any component.</p>
-          <pre><code class="language-typescript">function withScope&lt;P extends object&gt;(
+            <div class="glow-card rounded-xl p-6">
+              <h3 class="text-lg font-semibold text-purple-400 mb-3">withScope (HOC)</h3>
+              <p class="text-zinc-400 text-sm mb-4">Higher-Order Component that adds profiling to any component.</p>
+              <pre><code class="language-typescript">function withScope&lt;P extends object&gt;(
   Component: React.ComponentType&lt;P&gt;,
   options?: WithScopeOptions
-): React.ComponentType&lt;P&gt;
+): React.ComponentType&lt;P&gt;</code></pre>
+            </div>
+          </div>
 
-interface WithScopeOptions {
-  name?: string
-  trackProps?: boolean
-  trackState?: boolean
-  onRender?: (metrics: ComponentMetrics) => void
-}</code></pre>
-        </div>
-      </section>
+          <a href="components.html" class="inline-flex items-center gap-2 mt-6 text-blue-400 hover:text-blue-300 transition text-sm">
+            View full components documentation
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </section>
 
-      <!-- Kernel -->
-      <section id="kernel">
-        <h2 class="text-2xl font-semibold mb-4">Kernel</h2>
-        <pre><code class="language-typescript">interface Kernel {
+        <!-- Kernel Section -->
+        <section id="kernel" class="api-section mb-16">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold">Kernel</h2>
+          </div>
+          <p class="text-zinc-400 mb-6">The central micro-kernel that manages plugins, events, and metrics.</p>
+          <pre><code class="language-typescript">interface Kernel {
   // Plugin management
   register(plugin: Plugin): void
   unregister(pluginName: string): void
@@ -175,12 +382,20 @@ interface WithScopeOptions {
   // Lifecycle
   destroy(): void
 }</code></pre>
-      </section>
+        </section>
 
-      <!-- Utility Functions -->
-      <section id="utilities">
-        <h2 class="text-2xl font-semibold mb-4">Utility Functions</h2>
-        <pre><code class="language-typescript">// Global kernel access
+        <!-- Utilities Section -->
+        <section id="utilities" class="api-section">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold">Utility Functions</h2>
+          </div>
+          <pre><code class="language-typescript">// Global kernel access
 function getKernel(): Kernel
 function getMetrics(): MetricsStore | null
 function exportMetrics(): string
@@ -207,8 +422,28 @@ function formatBytes(bytes: number, decimals?: number): string
 function formatNumber(num: number, decimals?: number): string
 function formatPercentage(value: number, decimals?: number): string
 function formatTimestamp(timestamp: number, includeDate?: boolean): string</code></pre>
-      </section>
+        </section>
+      </main>
     </div>
-  </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span class="text-sm">⚡</span>
+          </div>
+          <span class="text-zinc-400 text-sm">ReactScope - Zero-dependency React profiler</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-zinc-400">
+          <a href="https://github.com/ersinkoc/reactscope" class="hover:text-white transition">GitHub</a>
+          <a href="https://www.npmjs.com/package/@oxog/reactscope" class="hover:text-white transition">npm</a>
+          <span>MIT License</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Provider API - ReactScope</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #fafafa; }
+    pre[class*="language-"] { background: #141414; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-800 sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="../../" class="flex items-center gap-2">
+        <span class="text-2xl">&#9889;</span>
+        <span class="font-bold text-xl">ReactScope</span>
+      </a>
+      <nav class="flex items-center gap-6">
+        <a href="../" class="text-zinc-400 hover:text-white transition">Docs</a>
+        <a href="./" class="text-white">API</a>
+        <a href="../examples/" class="text-zinc-400 hover:text-white transition">Examples</a>
+        <a href="https://github.com/ersinkoc/reactscope" class="text-zinc-400 hover:text-white transition">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <nav class="text-sm text-zinc-400 mb-8">
+      <a href="./" class="hover:text-white">API</a> / Provider
+    </nav>
+
+    <h1 class="text-4xl font-bold mb-8">ReactScopeProvider</h1>
+
+    <p class="text-xl text-zinc-400 mb-8">
+      The main provider component that initializes the ReactScope kernel and makes it available throughout your application.
+    </p>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Usage</h2>
+      <pre><code class="language-tsx">import { ReactScopeProvider } from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      enabled={true}
+      plugins={[]}
+      onReady={(kernel) => console.log('Ready!')}
+      options={{
+        sampleRate: 1,
+        maxHistorySize: 1000,
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Props</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="border-b border-zinc-700">
+            <tr>
+              <th class="py-3 px-4">Prop</th>
+              <th class="py-3 px-4">Type</th>
+              <th class="py-3 px-4">Default</th>
+              <th class="py-3 px-4">Description</th>
+            </tr>
+          </thead>
+          <tbody class="text-zinc-400">
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">enabled</td>
+              <td class="py-3 px-4 font-mono text-sm">boolean</td>
+              <td class="py-3 px-4 font-mono text-sm">true</td>
+              <td class="py-3 px-4">Enable or disable profiling</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">plugins</td>
+              <td class="py-3 px-4 font-mono text-sm">Plugin[]</td>
+              <td class="py-3 px-4 font-mono text-sm">[]</td>
+              <td class="py-3 px-4">Additional plugins to register</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">onReady</td>
+              <td class="py-3 px-4 font-mono text-sm">(kernel) => void</td>
+              <td class="py-3 px-4 font-mono text-sm">undefined</td>
+              <td class="py-3 px-4">Callback when kernel is ready</td>
+            </tr>
+            <tr class="border-b border-zinc-800">
+              <td class="py-3 px-4 font-mono text-sm">options</td>
+              <td class="py-3 px-4 font-mono text-sm">KernelOptions</td>
+              <td class="py-3 px-4 font-mono text-sm">{}</td>
+              <td class="py-3 px-4">Kernel configuration options</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-mono text-sm">children</td>
+              <td class="py-3 px-4 font-mono text-sm">ReactNode</td>
+              <td class="py-3 px-4 font-mono text-sm">required</td>
+              <td class="py-3 px-4">Your application components</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Options</h2>
+      <pre><code class="language-typescript">interface KernelOptions {
+  // Sampling rate for events (0-1)
+  sampleRate?: number
+
+  // Maximum history size for metrics
+  maxHistorySize?: number
+
+  // Auto-track all components
+  trackAllComponents?: boolean
+
+  // Slow render threshold in ms
+  slowRenderThreshold?: number
+}</code></pre>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Example with Dashboard</h2>
+      <pre><code class="language-tsx">import {
+  ReactScopeProvider,
+  createDashboardUIPlugin,
+  createConsoleReporterPlugin
+} from '@oxog/reactscope'
+
+function App() {
+  return (
+    &lt;ReactScopeProvider
+      plugins={[
+        createDashboardUIPlugin(),
+        createConsoleReporterPlugin({ logLevel: 'warn' })
+      ]}
+      onReady={(kernel) => {
+        // Show dashboard on startup
+        kernel.getPlugin('dashboard-ui')?.api.show()
+      }}
+    &gt;
+      &lt;YourApp /&gt;
+    &lt;/ReactScopeProvider&gt;
+  )
+}</code></pre>
+    </section>
+  </main>
+</body>
+</html>
